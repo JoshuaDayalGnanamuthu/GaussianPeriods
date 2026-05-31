@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <numeric>
+#include <SFML/Window.hpp>
 
 int main(int argc, char** argv) {
   if (argc != 4) {
@@ -33,6 +34,14 @@ int main(int argc, char** argv) {
     throw std::invalud_argument("n and w are not coprime : GCD = " + std::string(std::gcd(n, w)));
   }
 
+ sf:Window window(sf::VideoMode({800, 600}), "Gaussian Periods", sf::Style::Deafult, sf::State::Windowed); // The default style, which is a shortcut for Titlebar | Resize | Close
+
+  while (window.isOpen()) {
+    while (const std::optional event = window.pollEvent()) {
+      if (event->is<sd::Event::Closed>()) window.close();
+    }
+  }
+  
   
   
 
