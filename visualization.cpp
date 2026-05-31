@@ -6,6 +6,7 @@
 #include <string>
 #include <numeric>
 #include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 #include <vector>
 
 const double PI = std::acos(-1.0);
@@ -66,26 +67,74 @@ int main(int argc, char** argv) {
     throw std::invalid_argument("n and w are not coprime : GCD = " + std::to_string(std::gcd(n, w)));
   }
 
-  std::vector<gaussianPoint> points = gaussianPeriodPoints(n, w, c);
-  for ( const gaussianPoint &point : points) {
-    std::cout << point.real << " + " << point.imag << "i" << " color shcema : " << point.color << std::endl;
-  }
+  // std::vector<gaussianPoint> points = gaussianPeriodPoints(n, w, c);
+  //for ( const gaussianPoint &point : points) {
+  // std::cout << point.real << " + " << point.imag << "i" << " color shcema : " << point.color << std::endl;
+  //}
   
-  sf::Window window(sf::VideoMode({800, 600}), "Gaussian Periods", sf::Style::Default, sf::State::Windowed); // The default style, which is a shortcut for Titlebar | Resize | Close
+  sf::RenderWindow window(sf::VideoMode({800, 600}), "Gaussian Periods", sf::Style::Default, sf::State::Windowed); // The default style, which is a shortcut for Titlebar | Resize | Close
 
+  std::vector<sf::Color> colors = {
+    sf::Color::Red,
+    sf::Color::Green,
+    sf::Color::Blue,
+    sf::Color::Yellow,
+    sf::Color::Magenta,
+    sf::Color::Cyan,
+    sf::Color::Magenta,
+  };
+
+  double maxAbs = 0.0;
+  for ( const gaussianPoint& point : points) {
+    double dist = std::sqrt(point.real * point.real + point.imag * point.imag);
+    maxAbs = std::max(maxAbs, dist);
+  }
+
+  if (maxAbs == 0.0) maxAbs = 1.0;
+  
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
       if (event->is<sf::Event::Closed>()) window.close();
     }
 
+    window.clear(sf::Color::Black);
+    
     sf::Vector2u windowSize = window.getSize();
+    sf::CircleShape shape(50.f);
+    shape.setFillColor(sf::Color(100, 250, 50));
     auto [width, height] = windowSize;
+    
+    float centerX = width / 2.0f;
+    float centerY = height/ 2.0f;
 
+    float scale = 0.4f * std::min(width, height) / static_cast<float>(maxAbs);
+
+    sf::VertexArray axes(sf::PrimitiveType::Lines, 4);
+
+    axes[0].position = {0.f, centerY};
+    axes[1].position = {static_cast<float>(width), centerY};
+    axes[2].position = {centerX, 0.f};
+    axes[3].position = {centerX, static_cast<float>(height)};
+
+    for ( size_t i {}; i < 4; ++i ) {
+      axes[i].color = sf::Color::White;
+    }
+
+    window.draw(axes);
+
+    for ( const gaussianPoint& point : points) {
+      float x = centerX + static_cast<float>(point.real) * scale;
+      float y = centerY - static_cast<float>(point.imag) * scale;
+
+      sf::CircleShape dot(5.f);
+      dot.setOrigin({5.f, 5.f});
+      dot.setPosition({x, y});
+      dot.setFillColor(colors[point.color % colors.size()]);
+
+      window.draw(dot);
+    }
+    window.display();
   }
-  
-  
-  
-
-  
+ 
   return 0;
 }
