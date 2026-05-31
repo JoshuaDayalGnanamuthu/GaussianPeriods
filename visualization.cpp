@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     throw std::invalid_argument("n and w are not coprime : GCD = " + std::to_string(std::gcd(n, w)));
   }
 
-  // std::vector<gaussianPoint> points = gaussianPeriodPoints(n, w, c);
+  std::vector<gaussianPoint> points = gaussianPeriodPoints(n, w, c);
   //for ( const gaussianPoint &point : points) {
   // std::cout << point.real << " + " << point.imag << "i" << " color shcema : " << point.color << std::endl;
   //}
@@ -75,13 +75,40 @@ int main(int argc, char** argv) {
   sf::RenderWindow window(sf::VideoMode({800, 600}), "Gaussian Periods", sf::Style::Default, sf::State::Windowed); // The default style, which is a shortcut for Titlebar | Resize | Close
 
   std::vector<sf::Color> colors = {
-    sf::Color::Red,
-    sf::Color::Green,
-    sf::Color::Blue,
-    sf::Color::Yellow,
-    sf::Color::Magenta,
-    sf::Color::Cyan,
-    sf::Color::Magenta,
+      sf::Color::Red,
+      sf::Color::Green,
+      sf::Color::Blue,
+      sf::Color::Yellow,
+      sf::Color::Magenta,
+      sf::Color::Cyan,
+
+      sf::Color(255, 128, 0),    // Orange
+      sf::Color(128, 0, 255),    // Purple
+      sf::Color(255, 0, 128),    // Pink
+      sf::Color(128, 255, 0),    // Lime
+      sf::Color(0, 128, 255),    // Sky Blue
+      sf::Color(255, 128, 128),  // Salmon
+
+      sf::Color(128, 255, 255),  // Light Cyan
+      sf::Color(255, 255, 128),  // Light Yellow
+      sf::Color(192, 64, 64),    // Brick Red
+      sf::Color(64, 192, 64),    // Forest Green
+      sf::Color(64, 64, 192),    // Deep Blue
+      sf::Color(192, 64, 192),   // Violet
+
+      sf::Color(64, 192, 192),   // Teal
+      sf::Color(192, 192, 64),   // Olive
+      sf::Color(255, 64, 64),    // Bright Red
+      sf::Color(64, 255, 64),    // Bright Green
+      sf::Color(64, 64, 255),    // Bright Blue
+      sf::Color(255, 64, 255),   // Bright Magenta
+
+      sf::Color(64, 255, 255),   // Bright Cyan
+      sf::Color(255, 255, 64),   // Bright Yellow
+      sf::Color(255, 165, 0),    // Dark Orange
+      sf::Color(75, 0, 130),     // Indigo
+      sf::Color(238, 130, 238),  // Violet
+      sf::Color(0, 255, 127)     // Spring Green
   };
 
   double maxAbs = 0.0;
@@ -108,7 +135,8 @@ int main(int argc, char** argv) {
     float centerY = height/ 2.0f;
 
     float scale = 0.4f * std::min(width, height) / static_cast<float>(maxAbs);
-
+    float radius = std::clamp(scale / 25.0f, 1.0f, 8.0f);
+    
     sf::VertexArray axes(sf::PrimitiveType::Lines, 4);
 
     axes[0].position = {0.f, centerY};
@@ -126,8 +154,8 @@ int main(int argc, char** argv) {
       float x = centerX + static_cast<float>(point.real) * scale;
       float y = centerY - static_cast<float>(point.imag) * scale;
 
-      sf::CircleShape dot(5.f);
-      dot.setOrigin({5.f, 5.f});
+      sf::CircleShape dot(radius);
+      dot.setOrigin({radius, radius});
       dot.setPosition({x, y});
       dot.setFillColor(colors[point.color % colors.size()]);
 
