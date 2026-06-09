@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaussian Periods Visualizer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="canvas-wrap">
+      <canvas id="canvas" width="1000" height="750"></canvas>
+    </section>
+
+        <section class="controls">
+      <h1>Gaussian Periods Visualizer</h1>
+
+      <div class="grid">
+        <label>N<input id="nInput" type="number" min="2" value="12" /></label>
+
+        <label>omega<input id="wInput" type="number" min="1" value="7" /></label>
+
+        <label>colors<input id="cInput" type="number" min="1" value="3" /></label>
+
+        <button id="plotButton">Plot</button>
+      </div>
+
+      <p id="status">Enter coprime n and w, then plot.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

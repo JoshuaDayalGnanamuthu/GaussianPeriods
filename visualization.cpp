@@ -1,4 +1,5 @@
 #include <cmath>
+#include <thread>
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
@@ -18,23 +19,61 @@ typedef struct gaussianPoint {
 } guassianPoint;
   
 std::vector<gaussianPoint> gaussianPeriodPoints(size_t n, size_t w, size_t c) {
-  std::vector<gaussianPoint> points;
+  std::vector<gaussianPoint> points(n);
 
-  for ( size_t k {}; k < n; ++k ) {
-    gaussianPoint point;
-    size_t residue = 1;
+  w %= n;
 
-    do {
-      double angle = 2.0 * PI * k * residue / n;
+  // 1. Precompute residue cycle once
+  std::vector<size_t> residues;
+  size_t residue = 1;
 
-      point.real += std::cos(angle);
-      point.imag += std::sin(angle);
+  do {
+    residues.push_back(residue);
+    residue = (residue * w) % n;
+  } while (residue != 1);
 
-      residue = (residue * w) % n;
-    } while ( residue != 1);
+  // 2. Precompute all roots of unity once
+  std::vector<std::pair<double, double>> roots(n);
 
-    point.color = k % c;
-    points.push_back(point);
+  for (size_t i = 0; i < n; ++i) {
+    double angle = 2.0 * PI * i / n;
+    roots[i] = {std::cos(angle), std::sin(angle)};
+  }
+
+  unsigned int numThreads = std::thread::hardware_concurrency();
+  if (numThreads == 0) numThreads = 4;
+
+  size_t chunkSize = (n + numThreads - 1) / numThreads;
+
+  auto worker = [&](size_t start, size_t end) {
+    for (size_t k = start; k < end; ++k) {
+      gaussianPoint point;
+
+      for (size_t r : residues) {
+        size_t index = (k * r) % n;
+
+        point.real += roots[index].first;
+        point.imag += roots[index].second;
+      }
+
+      point.color = k % c;
+      points[k] = point;
+    }
+  };
+
+  std::vector<std::thread> threads;
+
+  for (size_t t = 0; t < numThreads; ++t) {
+    size_t start = t * chunkSize;
+    size_t end = std::min(start + chunkSize, n);
+
+    if (start < end) {
+      threads.emplace_back(worker, start, end);
+    }
+  }
+
+  for (std::thread& thread : threads) {
+    thread.join();
   }
 
   return points;
