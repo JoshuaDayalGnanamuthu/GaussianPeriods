@@ -10,6 +10,7 @@ const plotButton = document.getElementById("plotButton");
 const statusText = document.getElementById("status");
 
 let points = [];
+let colorCount = 3;
 
 function gcd(a, b) {
   while (b !== 0) {
@@ -74,7 +75,22 @@ function computeGaussianPeriodPoints(n, w, colorCount) {
     };
   }
 
-  return output;
+  return {
+    points: output,
+    residues,
+    order: residues.length
+  };
+}
+
+function countDistinctPoints(points, precision = 6) {
+  const seen = new Set();
+
+  for (const p of points) {
+    const key = `${p.real.toFixed(precision)},${p.imag.toFixed(precision)}`;
+    seen.add(key);
+  }
+
+  return seen.size;
 }
 
 function resizeCanvas() {
@@ -129,7 +145,7 @@ function draw() {
     for (const p of points) {
       const x = centerX + p.real * scale;
       const y = centerY - p.imag * scale;
-      const hue = (360 * p.color) / Number(evaluate(cInput.value));
+      const hue = (360 * p.color) / colorCount;
 
       ctx.fillStyle = hsvToRgb(hue, 0.9, 1.0);
       ctx.fillRect(x, y, 1, 1);
@@ -141,7 +157,7 @@ function draw() {
   for (const p of points) {
     const x = centerX + p.real * scale;
     const y = centerY - p.imag * scale;
-    const hue = (360 * p.color) / Number(evaluate(cInput.value));
+    const hue = (360 * p.color) / colorCount;
 
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
@@ -170,12 +186,27 @@ function plot() {
     return;
   }
 
+  colorCount = c;
+
   const start = performance.now();
-  points = computeGaussianPeriodPoints(n, w, c);
+  const result = computeGaussianPeriodPoints(n, w, c);
+  points = result.points;
   const end = performance.now();
 
-  statusText.textContent = `Plotted ${n} points in ${(end - start).toFixed(2)} ms.\n`;
-  statusText.textContent += `GCD of ${n} and ${w - 1}: ${gcd(w - 1, n)}`
+  const distinctCount = countDistinctPoints(points);
+  const order = result.order;
+  const gcdOmegaN = gcd(n, w);
+  const gcdOmegaMinusOne = gcd(w - 1, n);
+  const gcdColorsN = gcd(c, n);
+  const gcdColorsOrder = gcd(c, order);
+
+  statusText.textContent =
+    `Plotted ${n} points in ${(end - start).toFixed(2)} ms.\n` +
+    `ord_N(omega) = ${order}; each point sums ${order} roots of unity.\n` +
+    `Distinct visible points ≈ ${distinctCount} out of ${n}.\n` +
+    `gcd(N, omega) = ${gcdOmegaN}; gcd(N, omega - 1) = ${gcdOmegaMinusOne}.\n` +
+    `gcd(colors, N) = ${gcdColorsN}; gcd(colors, ord_N(omega)) = ${gcdColorsOrder}.`;
+  
   draw();
 }
 
