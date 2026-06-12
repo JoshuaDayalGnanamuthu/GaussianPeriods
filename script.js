@@ -1,4 +1,4 @@
-import { evaluate } from 'https://cloudflare.com';
+import { evaluate } from "https://cdn.jsdelivr.net/npm/mathjs@13.2.0/+esm";
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -129,7 +129,7 @@ function draw() {
     for (const p of points) {
       const x = centerX + p.real * scale;
       const y = centerY - p.imag * scale;
-      const hue = (360 * p.color) / Number(cInput.value);
+      const hue = (360 * p.color) / Number(evaluate(cInput.value));
 
       ctx.fillStyle = hsvToRgb(hue, 0.9, 1.0);
       ctx.fillRect(x, y, 1, 1);
@@ -141,7 +141,7 @@ function draw() {
   for (const p of points) {
     const x = centerX + p.real * scale;
     const y = centerY - p.imag * scale;
-    const hue = (360 * p.color) / Number(cInput.value);
+    const hue = (360 * p.color) / Number(evaluate(cInput.value));
 
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
