@@ -1,3 +1,5 @@
+import { evaluate } from 'https://cloudflare.com';
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -149,9 +151,9 @@ function draw() {
 }
 
 function plot() {
-  const n = Number(nInput.value);
-  const w = Number(wInput.value);
-  const c = Number(cInput.value);
+  const n = evaluate(nInput.value);
+  const w = evaluate(wInput.value);
+  const c = evaluate(cInput.value);
 
   if (!Number.isInteger(n) || !Number.isInteger(w) || !Number.isInteger(c)) {
     statusText.textContent = "n, w, and colors must be integers.";
