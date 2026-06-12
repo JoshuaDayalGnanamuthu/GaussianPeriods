@@ -174,7 +174,8 @@ function plot() {
   points = computeGaussianPeriodPoints(n, w, c);
   const end = performance.now();
 
-  statusText.textContent = `Plotted ${n} points in ${(end - start).toFixed(2)} ms.`;
+  statusText.textContent = `Plotted ${n} points in ${(end - start).toFixed(2)} ms.\n`;
+  statusText.textContent += `GCD of ${n} and ${w - 1}: ${gcd(w - 1, n)}`
   draw();
 }
 
