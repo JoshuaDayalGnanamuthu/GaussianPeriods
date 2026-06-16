@@ -81,8 +81,7 @@ function computeGaussianPeriodPoints(n, w, colorCount) {
     output[k] = {
       k,
       real,
-      imag,
-      color: k % colorCount
+      imag
     };
   }
 
@@ -181,11 +180,12 @@ function getSelectedColors() {
 
 function shouldDrawPoint(p) {
   const selectedColors = getSelectedColors();
+  const color = p.k % colorCount;
 
   // If nothing is selected, show all colors.
   if (selectedColors.length === 0) return true;
 
-  return selectedColors.includes(p.color);
+  return selectedColors.includes(color);
 }
 
 function resizeCanvas() {
@@ -219,7 +219,7 @@ function addHoverPoint(x, y, point) {
     x,
     y,
     k: point.k,
-    color: point.color,
+    color: point.k % colorCount,
     real: point.real,
     imag: point.imag
   });
@@ -305,7 +305,9 @@ function draw() {
 
       const x = centerX + p.real * scale;
       const y = centerY - p.imag * scale;
-      const hue = (360 * p.color) / colorCount;
+      
+      const color = p.k % colorCount;
+      const hue = (360 * color) / colorCount;
 
       ctx.fillStyle = hsvToRgb(hue, 0.9, 1.0);
       ctx.fillRect(x, y, 1, 1);
@@ -320,7 +322,9 @@ function draw() {
 
     const x = centerX + p.real * scale;
     const y = centerY - p.imag * scale;
-    const hue = (360 * p.color) / colorCount;
+    
+    const color = p.k % colorCount;
+    const hue = (360 * color) / colorCount;
 
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
@@ -329,6 +333,36 @@ function draw() {
 
     addHoverPoint(x, y, p);
   }
+}
+
+function recolorCurrentPlot() {
+  if (points.length === 0 || currentHistoryIndex < 0) return;
+
+  const rawValue = cInput.value.trim();
+
+  // Do nothing while the user is still typing.
+  if (rawValue === "") return;
+
+  const newC = evaluate(rawValue);
+
+  if (!Number.isInteger(newC) || newC < 1) {
+    return;
+  }
+
+  colorCount = newC;
+
+  const state = history[currentHistoryIndex];
+
+  state.c = newC;
+  state.gcdColorsN = gcd(newC, state.n);
+  state.gcdColorsOrder = gcd(newC, state.order);
+
+  updateColorFilterOptions(newC);
+  state.selectedColors = getSelectedColors();
+
+  statusText.textContent = buildStatusText(state);
+
+  draw();
 }
 
 function plot() {
@@ -352,11 +386,12 @@ function plot() {
   }
 
   colorCount = c;
-  updateColorFilterOptions(c);
 
   const start = performance.now();
   const result = computeGaussianPeriodPoints(n, w, c);
   const end = performance.now();
+
+  updateColorFilterOptions(c);
 
   points = result.points;
 
@@ -391,6 +426,26 @@ function plot() {
 }
 
 plotButton.addEventListener("click", plot);
+
+document.addEventListener("keydown", event => {
+  if (event.key !== "Enter") return;
+
+  if (document.activeElement === colorFilter) return;
+
+  event.preventDefault();
+  plot();
+});
+
+
+let recolorTimer = null;
+
+cInput.addEventListener("input", () => {
+  clearTimeout(recolorTimer);
+
+  recolorTimer = setTimeout(() => {
+    recolorCurrentPlot();
+  }, 300);
+});
 
 prevButton.addEventListener("click", () => {
   loadState(currentHistoryIndex - 1);
