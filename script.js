@@ -8,6 +8,11 @@ const wInput = document.getElementById("wInput");
 const cInput = document.getElementById("cInput");
 const plotButton = document.getElementById("plotButton");
 const statusText = document.getElementById("status");
+const prevButton = document.getElementById("prevButton");
+const nextButton = document.getElementById("nextButton");
+
+let history = [];
+let currentHistoryIndex = -1;
 
 let points = [];
 let colorCount = 3;
@@ -91,6 +96,59 @@ function countDistinctPoints(points, precision = 6) {
   }
 
   return seen.size;
+}
+
+function updateHistoryButtons() {
+  prevButton.disabled = currentHistoryIndex <= 0;
+  nextButton.disabled = currentHistoryIndex >= history.length - 1;
+}
+
+function buildStatusText(state) {
+  return [
+    `N: ${state.n}`,
+    `omega: ${state.w}`,
+    `colors: ${state.c}`,
+    `time: ${state.computeTime.toFixed(2)} ms`,
+    `ord_N(omega): ${state.order}`,
+    `roots per point: ${state.order}`,
+    `distinct visible: ${state.distinctCount} / ${state.n}`,
+    `gcd(N, omega): ${state.gcdOmegaN}`,
+    `gcd(N, omega - 1): ${state.gcdOmegaMinusOne}`,
+    `gcd(colors, N): ${state.gcdColorsN}`,
+    `gcd(colors, ord_N(omega)): ${state.gcdColorsOrder}`,
+    `history: ${currentHistoryIndex + 1} / ${history.length}`
+  ].join("\n");
+}
+
+function loadState(index) {
+  if (index < 0 || index >= history.length) return;
+
+  currentHistoryIndex = index;
+
+  const state = history[currentHistoryIndex];
+
+  points = state.points;
+  colorCount = state.c;
+
+  nInput.value = state.n;
+  wInput.value = state.w;
+  cInput.value = state.c;
+
+  statusText.textContent = buildStatusText(state);
+
+  draw();
+  updateHistoryButtons();
+}
+
+function saveState(state) {
+  // If you go back in history and then plot something new,
+  // delete the "future" states.
+  history = history.slice(0, currentHistoryIndex + 1);
+
+  history.push(state);
+  currentHistoryIndex = history.length - 1;
+
+  updateHistoryButtons();
 }
 
 function resizeCanvas() {
@@ -190,8 +248,9 @@ function plot() {
 
   const start = performance.now();
   const result = computeGaussianPeriodPoints(n, w, c);
-  points = result.points;
   const end = performance.now();
+
+  points = result.points;
 
   const distinctCount = countDistinctPoints(points);
   const order = result.order;
@@ -200,17 +259,39 @@ function plot() {
   const gcdColorsN = gcd(c, n);
   const gcdColorsOrder = gcd(c, order);
 
-  statusText.textContent =
-    `Plotted ${n} points in ${(end - start).toFixed(2)} ms.\n` +
-    `ord_N(omega) = ${order}; each point sums ${order} roots of unity.\n` +
-    `Distinct visible points ≈ ${distinctCount} out of ${n}.\n` +
-    `gcd(N, omega) = ${gcdOmegaN}; gcd(N, omega - 1) = ${gcdOmegaMinusOne}.\n` +
-    `gcd(colors, N) = ${gcdColorsN}; gcd(colors, ord_N(omega)) = ${gcdColorsOrder}.`;
-  
+  const state = {
+    n,
+    w,
+    c,
+    points: result.points,
+    residues: result.residues,
+    order,
+    distinctCount,
+    gcdOmegaN,
+    gcdOmegaMinusOne,
+    gcdColorsN,
+    gcdColorsOrder,
+    computeTime: end - start
+  };
+
+  saveState(state);
+
+  statusText.textContent = buildStatusText(state);
+
   draw();
 }
 
 plotButton.addEventListener("click", plot);
+
+prevButton.addEventListener("click", () => {
+  loadState(currentHistoryIndex - 1);
+});
+
+nextButton.addEventListener("click", () => {
+  loadState(currentHistoryIndex + 1);
+});
+
 window.addEventListener("resize", draw);
 
 plot();
+updateHistoryButtons();

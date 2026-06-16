@@ -33,7 +33,7 @@ canvas {
 }
 
 .controls {
-  width: 260px;
+  width: 300px;
   flex-shrink: 0;
   background: #1d1d1d;
   border: 1px solid #333;
@@ -92,9 +92,33 @@ button:hover {
 #status {
   margin: 0;
   color: #aaa;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.78rem;
+  line-height: 1.6;
   white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.history-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.history-buttons button {
+  background: #333;
+}
+
+.history-buttons button:hover {
+  background: #555;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background: #333;
 }
 
 @media (max-width: 720px) {
