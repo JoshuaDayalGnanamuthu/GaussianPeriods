@@ -2,6 +2,10 @@ import { evaluate } from "https://cdn.jsdelivr.net/npm/mathjs@13.2.0/+esm";
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const tooltip = document.getElementById("tooltip");
+
+const hoverCellSize = 10;
+let hoverGrid = new Map();
 
 const nInput = document.getElementById("nInput");
 const wInput = document.getElementById("wInput");
@@ -75,6 +79,7 @@ function computeGaussianPeriodPoints(n, w, colorCount) {
     }
 
     output[k] = {
+      k,
       real,
       imag,
       color: k % colorCount
@@ -193,6 +198,67 @@ function resizeCanvas() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+function clearHoverGrid() {
+  hoverGrid = new Map();
+}
+
+function getHoverCell(x, y) {
+  const cellX = Math.floor(x / hoverCellSize);
+  const cellY = Math.floor(y / hoverCellSize);
+  return `${cellX},${cellY}`;
+}
+
+function addHoverPoint(x, y, point) {
+  const key = getHoverCell(x, y);
+
+  if (!hoverGrid.has(key)) {
+    hoverGrid.set(key, []);
+  }
+
+  hoverGrid.get(key).push({
+    x,
+    y,
+    k: point.k,
+    color: point.color,
+    real: point.real,
+    imag: point.imag
+  });
+}
+
+function findNearestHoverPoint(mouseX, mouseY) {
+  const cellX = Math.floor(mouseX / hoverCellSize);
+  const cellY = Math.floor(mouseY / hoverCellSize);
+
+  let best = null;
+  let bestDist = Infinity;
+
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      const key = `${cellX + dx},${cellY + dy}`;
+      const candidates = hoverGrid.get(key);
+
+      if (!candidates) continue;
+
+      for (const p of candidates) {
+        const dist = Math.hypot(mouseX - p.x, mouseY - p.y);
+
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = p;
+        }
+      }
+    }
+  }
+
+  const hoverRadius = points.length > 8000 ? 5 : 10;
+
+  if (bestDist <= hoverRadius) {
+    return best;
+  }
+
+  return null;
+}
+
 function draw() {
   resizeCanvas();
 
@@ -202,6 +268,8 @@ function draw() {
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, width, height);
+
+  clearHoverGrid();
 
   const centerX = width / 2;
   const centerY = height / 2;
@@ -241,6 +309,7 @@ function draw() {
 
       ctx.fillStyle = hsvToRgb(hue, 0.9, 1.0);
       ctx.fillRect(x, y, 1, 1);
+      addHoverPoint(x, y, p);
     }
 
     return;
@@ -257,6 +326,8 @@ function draw() {
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fillStyle = hsvToRgb(hue, 0.9, 1.0);
     ctx.fill();
+
+    addHoverPoint(x, y, p);
   }
 }
 
@@ -335,6 +406,34 @@ colorFilter.addEventListener("change", () => {
   }
 
   draw();
+});
+
+canvas.addEventListener("mousemove", event => {
+  const rect = canvas.getBoundingClientRect();
+
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+
+  const nearest = findNearestHoverPoint(mouseX, mouseY);
+
+  if (!nearest) {
+    tooltip.style.display = "none";
+    return;
+  }
+
+  tooltip.style.display = "block";
+  tooltip.style.left = `${mouseX + 12}px`;
+  tooltip.style.top = `${mouseY + 12}px`;
+
+  tooltip.textContent =
+    `k = ${nearest.k}\n` +
+    `color = ${nearest.color}\n` +
+    `Re ≈ ${nearest.real.toFixed(5)}\n` +
+    `Im ≈ ${nearest.imag.toFixed(5)}`;
+});
+
+canvas.addEventListener("mouseleave", () => {
+  tooltip.style.display = "none";
 });
 
 window.addEventListener("resize", draw);
