@@ -121,6 +121,22 @@ button:disabled:hover {
   background: #333;
 }
 
+select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 15px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+  font-size: 0.95rem;
+}
+
+select option {
+  padding: 0.35rem;
+  text-align: center;
+  border-radius: 5px;
+}
+
 @media (max-width: 720px) {
   .app {
     flex-direction: column;

@@ -6,6 +6,7 @@ const ctx = canvas.getContext("2d");
 const nInput = document.getElementById("nInput");
 const wInput = document.getElementById("wInput");
 const cInput = document.getElementById("cInput");
+const colorFilter = document.getElementById("colorFilter");
 const plotButton = document.getElementById("plotButton");
 const statusText = document.getElementById("status");
 const prevButton = document.getElementById("prevButton");
@@ -134,6 +135,8 @@ function loadState(index) {
   wInput.value = state.w;
   cInput.value = state.c;
 
+  updateColorFilterOptions(state.c, state.selectedColors);
+
   statusText.textContent = buildStatusText(state);
 
   draw();
@@ -149,6 +152,35 @@ function saveState(state) {
   currentHistoryIndex = history.length - 1;
 
   updateHistoryButtons();
+}
+
+function updateColorFilterOptions(c, selectedColors = null) {
+  colorFilter.innerHTML = "";
+
+  for (let i = 0; i < c; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `Color ${i}`;
+
+    if (selectedColors === null || selectedColors.includes(i)) {
+      option.selected = true;
+    }
+
+    colorFilter.appendChild(option);
+  }
+}
+
+function getSelectedColors() {
+  return Array.from(colorFilter.selectedOptions).map(option => Number(option.value));
+}
+
+function shouldDrawPoint(p) {
+  const selectedColors = getSelectedColors();
+
+  // If nothing is selected, show all colors.
+  if (selectedColors.length === 0) return true;
+
+  return selectedColors.includes(p.color);
 }
 
 function resizeCanvas() {
@@ -201,6 +233,8 @@ function draw() {
   // For large n, draw 1px points for speed.
   if (points.length > 8000) {
     for (const p of points) {
+      if (!shouldDrawPoint(p)) continue;
+
       const x = centerX + p.real * scale;
       const y = centerY - p.imag * scale;
       const hue = (360 * p.color) / colorCount;
@@ -213,6 +247,8 @@ function draw() {
   }
 
   for (const p of points) {
+    if (!shouldDrawPoint(p)) continue;
+
     const x = centerX + p.real * scale;
     const y = centerY - p.imag * scale;
     const hue = (360 * p.color) / colorCount;
@@ -245,6 +281,7 @@ function plot() {
   }
 
   colorCount = c;
+  updateColorFilterOptions(c);
 
   const start = performance.now();
   const result = computeGaussianPeriodPoints(n, w, c);
@@ -271,7 +308,8 @@ function plot() {
     gcdOmegaMinusOne,
     gcdColorsN,
     gcdColorsOrder,
-    computeTime: end - start
+    computeTime: end - start,
+    selectedColors: getSelectedColors()
   };
 
   saveState(state);
@@ -289,6 +327,14 @@ prevButton.addEventListener("click", () => {
 
 nextButton.addEventListener("click", () => {
   loadState(currentHistoryIndex + 1);
+});
+
+colorFilter.addEventListener("change", () => {
+  if (currentHistoryIndex >= 0) {
+    history[currentHistoryIndex].selectedColors = getSelectedColors();
+  }
+
+  draw();
 });
 
 window.addEventListener("resize", draw);
