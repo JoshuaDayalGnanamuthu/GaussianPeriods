@@ -31,6 +31,26 @@ function gcd(a, b) {
   return a;
 }
 
+function modInverse(w, n) {
+  let oldR = w;
+  let r = n;
+  let oldS = 1;
+  let s = 0;
+
+  while (r !== 0) {
+    const quotient = Math.floor(oldR / r);
+
+    [oldR, r] = [r, oldR - quotient * r];
+    [oldS, s] = [s, oldS - quotient * s];
+  }
+
+  if (oldR !== 1) {
+    return null;
+  }
+
+  return ((oldS % n) + n) % n;
+}
+
 function hsvToRgb(h, s, v) {
   const c = v * s;
   const x = c * (1 - Math.abs((h / 60) % 2 - 1));
@@ -110,10 +130,10 @@ function updateHistoryButtons() {
 
 function buildStatusText(state) {
   return [
+    `time: ${state.computeTime.toFixed(2)} ms`,
     `N: ${state.n}`,
     `omega: ${state.w}`,
     `colors: ${state.c}`,
-    `time: ${state.computeTime.toFixed(2)} ms`,
     `ord_N(omega): ${state.order}`,
     `roots per point: ${state.order}`,
     `distinct visible: ${state.distinctCount} / ${state.n}`,
@@ -121,6 +141,7 @@ function buildStatusText(state) {
     `gcd(N, omega - 1): ${state.gcdOmegaMinusOne}`,
     `gcd(colors, N): ${state.gcdColorsN}`,
     `gcd(colors, ord_N(omega)): ${state.gcdColorsOrder}`,
+    `omega inverse mod N: ${state.omegaInverse}`,
     `history: ${currentHistoryIndex + 1} / ${history.length}`
   ].join("\n");
 }
@@ -401,6 +422,7 @@ function plot() {
   const gcdOmegaMinusOne = gcd(w - 1, n);
   const gcdColorsN = gcd(c, n);
   const gcdColorsOrder = gcd(c, order);
+  const omegaInverse = modInverse(w, n);
 
   const state = {
     n,
@@ -414,6 +436,7 @@ function plot() {
     gcdOmegaMinusOne,
     gcdColorsN,
     gcdColorsOrder,
+    omegaInverse,
     computeTime: end - start,
     selectedColors: getSelectedColors()
   };
