@@ -22,6 +22,41 @@ let currentHistoryIndex = -1;
 let points = [];
 let colorCount = 3;
 
+function getParamsFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    n: params.get("n") ?? "12",
+    w: params.get("w") ?? "7",
+    c: params.get("c") ?? "3",
+  };
+}
+
+function updateUrl(n, w, c, replace = false) {
+  const url = new URL(window.location.href);
+
+  url.searchParams.set("n", n);
+  url.searchParams.set("w", w);
+  url.searchParams.set("c", c);
+
+  const state = {n, w, c};
+
+  if (replace) {
+    window.history.replaceState(state, "", url);
+  }
+  else {
+    window.history.pushState(state, "", url);
+  }
+}
+
+function loadParamsFromUrl() {
+  const {n, w, c} = getParamsFromUrl();
+
+  nInput.value = n;
+  wInput.value = w;
+  cInput.value = c;
+}
+
 function gcd(a, b) {
   while (b !== 0) {
     const temp = b;
@@ -381,12 +416,14 @@ function recolorCurrentPlot() {
   updateColorFilterOptions(newC);
   state.selectedColors = getSelectedColors();
 
+  updateUrl(state.n, state.w, newC, true);
+
   statusText.textContent = buildStatusText(state);
 
   draw();
 }
 
-function plot() {
+function plot({updateBrowserHistory = true} = {}) {
   const n = evaluate(nInput.value);
   const w = evaluate(wInput.value);
   const c = evaluate(cInput.value);
@@ -443,9 +480,14 @@ function plot() {
 
   saveState(state);
 
+  if (updateBrowserHistory) {
+    updateUrl(n, w, c);
+  }
+
   statusText.textContent = buildStatusText(state);
 
   draw();
+
 }
 
 plotButton.addEventListener("click", plot);
@@ -516,5 +558,25 @@ canvas.addEventListener("mouseleave", () => {
 
 window.addEventListener("resize", draw);
 
-plot();
+window.addEventListener("popstate", () => {
+  loadParamsFromUrl();
+
+  plot({
+    updateBrowserHistory: false
+  });
+});
+
+loadParamsFromUrl();
+
+plot({
+  updateBrowserHistory: false
+});
+
+// Put the initial values into the current browser-history entry.
+const initialN = evaluate(nInput.value);
+const initialW = evaluate(wInput.value);
+const initialC = evaluate(cInput.value);
+
+updateUrl(initialN, initialW, initialC, true);
+
 updateHistoryButtons();
