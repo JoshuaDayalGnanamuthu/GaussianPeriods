@@ -37,6 +37,16 @@ function requestDraw() {
 }
 
 
+function downloadImage() {
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gaussian-period-n${currentState.n}-w${currentState.w}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, "image/png");
+}
 
 const HOVER_CELL = 10;
 let hoverGrid = new Map();
@@ -563,6 +573,8 @@ window.addEventListener("mouseup", () => {
   isDragging = false;
   canvas.style.cursor = "";
 });
+
+document.getElementById("downloadButton").addEventListener("click", downloadImage);
 
 loadParamsFromUrl();
 syncCanvasSize();
