@@ -1,8 +1,14 @@
 self.onmessage = function({ data: { n, w } }) {
   w %= n;
-  const residues = [];
+  const residuesBuf = new Int32Array(n);
   let res = 1;
-  do { residues.push(res); res = (res * w) % n; } while (res !== 1);
+  let order = 0;
+  do {
+    residuesBuf[order++] = res;
+    res = (res * w) % n;
+  } while (res !== 1);
+
+  const residues = residuesBuf.slice(0, order);
 
   const cosA = new Float64Array(n);
   const sinA = new Float64Array(n);
@@ -26,5 +32,5 @@ self.onmessage = function({ data: { n, w } }) {
   }
 
   self.postMessage({ reals, imags, residues, order: residues.length },
-    [reals.buffer, imags.buffer]);
+    [reals.buffer, imags.buffer, residues.buffer]);
 };
