@@ -38,11 +38,14 @@ function requestDraw() {
 
 
 function downloadImage() {
+  const state = history[currentHistoryIndex];
   canvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `gaussian-period-n${currentState.n}-w${currentState.w}.png`;
+    a.download = state
+      ? `gaussian-period-n${state.n}-w${state.w}-c${state.c}.png`
+      : `gaussian-period.png`;
     a.click();
     URL.revokeObjectURL(url);
   }, "image/png");
@@ -257,8 +260,8 @@ function syncCanvasSize() {
 function draw() {
   syncCanvasSize();
 
-  const width   = canvasW;
-  const height  = canvasH;
+  const width = canvasW;
+  const height = canvasH;
   const centerX = width  / 2;
   const centerY = height / 2;
 
@@ -268,6 +271,7 @@ function draw() {
   clearHoverGrid();
   ctx.save();
   ctx.translate(panX, panY);
+  ctx.scale(zoomFactor, zoomFactor);
 
   const visL = (0 - panX) / zoomFactor;
   const visR = (width - panX) / zoomFactor;
