@@ -126,31 +126,48 @@ function buildPalette() {
   }
 }
 
-function computeGaussianPeriodPoints(n, w) {
-  w %= n;
-  const residues = [];
-  let res = 1;
-  do { residues.push(res); res = (res * w) % n; } while (res !== 1);
+// function computeGaussianPeriodPoints(n, w) {
+//   w %= n;
+//   const residues = [];
+//   let res = 1;
+//   do { residues.push(res); res = (res * w) % n; } while (res !== 1);
 
-  const cosA = new Float64Array(n);
-  const sinA = new Float64Array(n);
-  for (let i = 0; i < n; i++) {
-    const angle = 2 * Math.PI * i / n;
-    cosA[i] = Math.cos(angle);
-    sinA[i] = Math.sin(angle);
-  }
+//   const cosA = new Float64Array(n);
+//   const sinA = new Float64Array(n);
+//   for (let i = 0; i < n; i++) {
+//     const angle = 2 * Math.PI * i / n;
+//     cosA[i] = Math.cos(angle);
+//     sinA[i] = Math.sin(angle);
+//   }
 
-  const output = new Array(n);
-  for (let k = 0; k < n; k++) {
-    let real = 0, imag = 0;
-    for (const r of residues) {
-      const idx = (k * r) % n;
-      real += cosA[idx];
-      imag += sinA[idx];
-    }
-    output[k] = { k, real, imag };
+//   const output = new Array(n);
+//   for (let k = 0; k < n; k++) {
+//     let real = 0, imag = 0;
+//     for (const r of residues) {
+//       const idx = (k * r) % n;
+//       real += cosA[idx];
+//       imag += sinA[idx];
+//     }
+//     output[k] = { k, real, imag };
+//   }
+//   return { points: output, residues, order: residues.length };
+// }
+
+let worker = new Worker("worker.js")
+let workerCallback = null;
+
+worker.onmessage = function({data}) {
+  if (workerCallback) {
+    workerCallback(data);
+    workerCallback = null;
   }
-  return { points: output, residues, order: residues.length };
+};
+
+function computeAsync(n, w, callback) {
+  worker.terminate();
+  worker = new Worker("worker.js");
+  worker.onmessage = ({ data }) => callback(data);
+  worker.postMessage({ n, w });
 }
 
 function countDistinctPoints(pts, precision = 6) {
@@ -372,33 +389,41 @@ function plot({ updateBrowserHistory = true } = {}) {
   buildPalette();
 
   const t0 = performance.now();
-  const result = computeGaussianPeriodPoints(n, w);
-  const computeTime = performance.now() - t0;
+  // const result = computeGaussianPeriodPoints(n, w);
+  statusText.textContent = "Computing...";
 
-  updateColorFilterOptions(c);
-  points = result.points;
+  computeAsync(n, w, ({reals, imags, residues, order}) => {
+    const computeTime = performance.now() - t0;
+    const pts = Array.from({ length: n }, (_, k) => ({
+      k, real: reals[k], imag: imags[k]
+    }));
 
-  const state = {
-    n, w, c,
-    points: result.points,
-    residues: result.residues,
-    order: result.order,
-    distinctCount: countDistinctPoints(result.points),
-    gcdOmegaN: gcd(n, w),
-    gcdOmegaMinusOne: gcd(w - 1, n),
-    gcdColorsN: gcd(c, result.order), 
-    gcdColorsOrder: gcd(c, result.order),
-    omegaInverse: modInverse(w, n),
-    computeTime,
-    selectedColors: getSelectedColors()
-  };
+    const result = { points: pts, residues, order };
+    updateColorFilterOptions(c);
+    points = result.points;
 
-  state.gcdColorsN = gcd(c, n);
+    const state = {
+      n, w, c,
+      points: result.points,
+      residues: result.residues,
+      order: result.order,
+      distinctCount: countDistinctPoints(result.points),
+      gcdOmegaN: gcd(n, w),
+      gcdOmegaMinusOne: gcd(w - 1, n),
+      gcdColorsN: gcd(c, result.order), 
+      gcdColorsOrder: gcd(c, result.order),
+      omegaInverse: modInverse(w, n),
+      computeTime,
+      selectedColors: getSelectedColors()
+    };
 
-  saveState(state);
-  if (updateBrowserHistory) updateUrl(n, w, c);
-  statusText.textContent = buildStatusText(state);
-  requestDraw();
+    state.gcdColorsN = gcd(c, n);
+
+    saveState(state);
+    if (updateBrowserHistory) updateUrl(n, w, c);
+    statusText.textContent = buildStatusText(state);
+    requestDraw();
+  });
 }
 
 function recolorCurrentPlot() {
@@ -542,7 +567,7 @@ canvas.addEventListener("touchmove", e => {
     const rect = canvas.getBoundingClientRect();
     lastPinchMX = ((t0.clientX + t1.clientX) / 2) - rect.left;
     lastPinchMY = ((t0.clientY + t1.clientY) / 2) - rect.top;
-    zoomAt(lastPinchMX, lastPinchMY, zoomFactor * ratio);
+    zoomAt(lastPinchMX, lastPinchMY, zoomFactor * ratio * 2.0);
     requestDraw();
   }
 }, { passive: false });
