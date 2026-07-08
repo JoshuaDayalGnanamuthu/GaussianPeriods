@@ -234,6 +234,40 @@ input[type="range"]::-moz-range-thumb:hover {
   text-align: right;
 }
 
+#speedValue {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.playback-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #262626;
+  border-radius: 10px;
+}
+
+.playback-controls button {
+  width: 100%;
+  padding: 0.7rem;
+  background: #03b548;
+  border: 0;
+  border-radius: 10px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.playback-controls button:hover {
+  background: #54ea63;
+}
+
+.playback-controls label {
+  margin-bottom: 0;
+  gap: 0.3rem;
+}
+
 @media (max-width: 720px) {
   .app {
     flex-direction: column;

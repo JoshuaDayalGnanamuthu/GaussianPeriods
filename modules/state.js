@@ -36,5 +36,12 @@ export const state = {
   pendingWheelDelta: 0,
   wheelRafPending: false,
 
+  // Animation state
+  isAnimating: false,
+  animationK: 0,
+  animationSpeed: 1,
+  animationStartTime: null,
+  pointsPerSecond: 100,
+
   recolorTimer: null
 };

@@ -45,6 +45,10 @@ const downloadCSVButton = document.getElementById('downloadCSV');
 const pointSizeSlider = document.getElementById('pointSizeSlider');
 const pointSizeValue = document.getElementById('pointSizeValue');
 const kInput = document.getElementById('kInput');
+const playButton = document.getElementById('playButton');
+const pauseButton = document.getElementById('pauseButton');
+const speedSlider = document.getElementById('speedSlider');
+const speedValue = document.getElementById('speedValue');
 
 let colorPalette = [];
 
@@ -172,9 +176,14 @@ function plot() {
     state.colorCount = c;
     state.points = pts;
     state.trackedK = null;
+    state.isAnimating = false;
+    state.animationK = 0;
+    state.animationStartTime = null;
     colorPalette = buildPalette(c);
 
     kInput.value = '';
+    playButton.style.display = 'block';
+    pauseButton.style.display = 'none';
     updateColorFilterOptions(colorFilter, c);
 
     // Pack computation metadata alongside points for history
@@ -198,6 +207,58 @@ function plot() {
     statusText.textContent = buildStatusText(newState, state.currentHistoryIndex, state.history.length);
     requestDraw(drawWrapped);
   });
+}
+
+// Animation loop for plotting points sequentially
+function animationFrame(timestamp) {
+  if (!state.isAnimating) return;
+
+  if (state.animationStartTime === null) {
+    state.animationStartTime = timestamp;
+  }
+
+  const elapsed = timestamp - state.animationStartTime;
+  const pointDuration = 1000 / (state.pointsPerSecond * state.animationSpeed);
+  const newK = Math.floor(elapsed / pointDuration) + 1;
+
+  if (newK >= state.points.length) {
+    state.isAnimating = false;
+    state.animationK = state.points.length;
+    playButton.style.display = 'block';
+    pauseButton.style.display = 'none';
+    state.animationStartTime = null;
+    requestDraw(drawWrapped);
+    return;
+  }
+
+  state.animationK = newK;
+  requestDraw(drawWrapped);
+  requestAnimationFrame(animationFrame);
+}
+
+// Start/resume animation
+function startAnimation() {
+  if (state.points.length === 0) {
+    statusText.textContent = 'Plot points first.';
+    return;
+  }
+
+  if (state.animationK >= state.points.length) {
+    state.animationK = 0;
+    state.animationStartTime = null;
+  }
+
+  state.isAnimating = true;
+  playButton.style.display = 'none';
+  pauseButton.style.display = 'block';
+  requestAnimationFrame(animationFrame);
+}
+
+// Pause animation
+function pauseAnimation() {
+  state.isAnimating = false;
+  playButton.style.display = 'block';
+  pauseButton.style.display = 'none';
 }
 
 // Track a specific k point on the plot and display its coordinates
@@ -304,6 +365,15 @@ function setupEventListeners() {
   kInput.addEventListener('input', () => {
     clearTimeout(kTrackTimer);
     kTrackTimer = setTimeout(trackKPoint, 200);
+  });
+
+  playButton.addEventListener('click', startAnimation);
+  pauseButton.addEventListener('click', pauseAnimation);
+
+  speedSlider.addEventListener('input', () => {
+    const speed = parseFloat(speedSlider.value);
+    state.animationSpeed = speed;
+    speedValue.textContent = speed.toFixed(1) + 'x';
   });
 
   // Show hover tooltip with point info using spatial hash grid query
