@@ -44,6 +44,7 @@ const downloadButton = document.getElementById('downloadButton');
 const downloadCSVButton = document.getElementById('downloadCSV');
 const pointSizeSlider = document.getElementById('pointSizeSlider');
 const pointSizeValue = document.getElementById('pointSizeValue');
+const kInput = document.getElementById('kInput');
 
 let colorPalette = [];
 
@@ -78,11 +79,13 @@ function loadState(index) {
 
   state.points = savedState.points;
   state.colorCount = savedState.c;
+  state.trackedK = null;
   colorPalette = buildPalette(savedState.c);
 
   nInput.value = savedState.n;
   wInput.value = savedState.w;
   cInput.value = savedState.c;
+  kInput.value = '';
 
   updateColorFilterOptions(colorFilter, savedState.c, savedState.selectedColors);
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
@@ -168,8 +171,10 @@ function plot() {
 
     state.colorCount = c;
     state.points = pts;
+    state.trackedK = null;
     colorPalette = buildPalette(c);
 
+    kInput.value = '';
     updateColorFilterOptions(colorFilter, c);
 
     // Pack computation metadata alongside points for history
@@ -193,6 +198,43 @@ function plot() {
     statusText.textContent = buildStatusText(newState, state.currentHistoryIndex, state.history.length);
     requestDraw(drawWrapped);
   });
+}
+
+// Track a specific k point on the plot and display its coordinates
+function trackKPoint() {
+  if (state.points.length === 0) {
+    statusText.textContent = 'No points to track. Plot first.';
+    return;
+  }
+
+  const raw = kInput.value.trim();
+  if (!raw) {
+    state.trackedK = null;
+    requestDraw(drawWrapped);
+    return;
+  }
+
+  let k;
+  try {
+    k = evaluate(raw);
+  } catch (err) {
+    statusText.textContent = `Error in k: ${err.message}`;
+    state.trackedK = null;
+    requestDraw(drawWrapped);
+    return;
+  }
+
+  if (!Number.isInteger(k) || k < 0 || k >= state.points.length) {
+    statusText.textContent = `k must be an integer from 0 to ${state.points.length - 1}`;
+    state.trackedK = null;
+    requestDraw(drawWrapped);
+    return;
+  }
+
+  state.trackedK = k;
+  const point = state.points[k];
+  statusText.textContent = `k=${k}: Re ≈ ${point.real.toFixed(6)}, Im ≈ ${point.imag.toFixed(6)}`;
+  requestDraw(drawWrapped);
 }
 
 // Change color count without recomputing points (called on color input change)
@@ -255,6 +297,13 @@ function setupEventListeners() {
     state.pointSizeMultiplier = size;
     pointSizeValue.textContent = size.toFixed(1) + 'x';
     requestDraw(drawWrapped);
+  });
+
+  // Debounce k input to avoid tracking on every keystroke
+  let kTrackTimer = null;
+  kInput.addEventListener('input', () => {
+    clearTimeout(kTrackTimer);
+    kTrackTimer = setTimeout(trackKPoint, 200);
   });
 
   // Show hover tooltip with point info using spatial hash grid query

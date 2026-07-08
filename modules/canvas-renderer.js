@@ -132,6 +132,20 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
     }
   }
 
+  // Highlight tracked k point with a glowing ring
+  if (state.trackedK !== null && state.trackedK >= 0 && state.trackedK < state.points.length) {
+    const trackedPoint = state.points[state.trackedK];
+    const wx = centerX + trackedPoint.real * scale;
+    const wy = centerY - trackedPoint.imag * scale;
+
+    ctx.strokeStyle = '#ffff00';
+    ctx.lineWidth = 3 / state.zoomFactor;
+    ctx.beginPath();
+    const highlightRadius = (radius * 2) / state.zoomFactor;
+    ctx.arc(wx, wy, highlightRadius, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+
   ctx.restore();
 }
 

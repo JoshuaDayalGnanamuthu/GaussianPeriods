@@ -4,6 +4,7 @@ export const state = {
   history: [],
   currentHistoryIndex: -1,
   colorCount: 3,
+  trackedK: null,
 
   // Viewport: complex plane to canvas transformation
   zoomFactor: 1,
