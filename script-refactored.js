@@ -45,6 +45,17 @@ const downloadCSVButton = document.getElementById('downloadCSV');
 
 let colorPalette = [];
 
+// Safely evaluate expression and catch parsing/evaluation errors
+function safeEvaluate(expr, displayName) {
+  try {
+    return evaluate(expr);
+  } catch (err) {
+    const msg = err.message || String(err);
+    statusText.textContent = `Error in ${displayName}: ${msg}`;
+    return null;
+  }
+}
+
 function updateHistoryButtonsUI() {
   updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
 }
@@ -129,10 +140,11 @@ function downloadCSV() {
 
 // Compute Gaussian period points asynchronously, save result, and render
 function plot() {
-  const n = evaluate(nInput.value);
-  const w = evaluate(wInput.value);
-  const c = evaluate(cInput.value);
+  const n = safeEvaluate(nInput.value, 'n');
+  const w = safeEvaluate(wInput.value, 'w');
+  const c = safeEvaluate(cInput.value, 'colors');
 
+  if (n === null || w === null || c === null) return;
   if (!validateInput(n, w, c, statusText)) return;
 
   const t0 = performance.now();
@@ -182,7 +194,9 @@ function recolorCurrentPlot() {
   const raw = cInput.value.trim();
   if (!raw) return;
 
-  const newC = evaluate(raw);
+  const newC = safeEvaluate(raw, 'colors');
+  if (newC === null) return;
+
   const savedState = state.history[state.currentHistoryIndex];
 
   if (!validateRecolorInput(newC, savedState.n, statusText)) return;
@@ -273,11 +287,13 @@ function initialize() {
   syncCanvasSize(state);
   setupEventListeners();
 
-  const initialN = evaluate(nInput.value);
-  const initialW = evaluate(wInput.value);
-  const initialC = evaluate(cInput.value);
+  const initialN = safeEvaluate(nInput.value, 'n');
+  const initialW = safeEvaluate(wInput.value, 'w');
+  const initialC = safeEvaluate(cInput.value, 'colors');
 
-  updateUrl(initialN, initialW, initialC, true);
+  if (initialN !== null && initialW !== null && initialC !== null) {
+    updateUrl(initialN, initialW, initialC, true);
+  }
   updateHistoryButtonsUI();
 
   plot();
