@@ -150,7 +150,13 @@ function plot() {
   const t0 = performance.now();
   statusText.textContent = 'Computing...';
 
-  computeAsync(n, w, ({ reals, imags, residues, order }) => {
+  computeAsync(n, w, (result, error) => {
+    if (error) {
+      statusText.textContent = error.message;
+      return;
+    }
+
+    const { reals, imags, residues, order } = result;
     const computeTime = performance.now() - t0;
     const pts = Array.from({ length: n }, (_, k) => ({
       k,
