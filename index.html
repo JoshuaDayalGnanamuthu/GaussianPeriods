@@ -28,6 +28,17 @@
           <select id="colorFilter" multiple size="6"></select>
         </label>
 
+        <label>
+          <div class="label-with-info">
+            Point size
+            <span class="info-icon" title="Large point sizes with many points may impact performance">ⓘ</span>
+          </div>
+          <div class="slider-container">
+            <input id="pointSizeSlider" type="range" min="0.5" max="10" step="0.1" value="1" />
+            <span id="pointSizeValue">1.0x</span>
+          </div>
+        </label>
+
         <button id="plotButton">Plot</button>
         <button id="downloadButton">Save PNG</button>
         <button id="downloadCSV">Download CSV</button>

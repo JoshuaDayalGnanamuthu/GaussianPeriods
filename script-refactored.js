@@ -42,6 +42,8 @@ const prevButton = document.getElementById('prevButton');
 const nextButton = document.getElementById('nextButton');
 const downloadButton = document.getElementById('downloadButton');
 const downloadCSVButton = document.getElementById('downloadCSV');
+const pointSizeSlider = document.getElementById('pointSizeSlider');
+const pointSizeValue = document.getElementById('pointSizeValue');
 
 let colorPalette = [];
 
@@ -245,6 +247,13 @@ function setupEventListeners() {
     if (state.currentHistoryIndex >= 0) {
       state.history[state.currentHistoryIndex].selectedColors = getSelectedColors(colorFilter);
     }
+    requestDraw(drawWrapped);
+  });
+
+  pointSizeSlider.addEventListener('input', () => {
+    const size = parseFloat(pointSizeSlider.value);
+    state.pointSizeMultiplier = size;
+    pointSizeValue.textContent = size.toFixed(1) + 'x';
     requestDraw(drawWrapped);
   });
 
