@@ -42,9 +42,7 @@ export function updateHistoryButtons(prevButton, nextButton, currentHistoryIndex
 export function buildStatusText(state, currentHistoryIndex, historyLength) {
   return [
     `time: ${state.computeTime.toFixed(2)} ms`,
-    `color modulus m: ${state.c}`,
     `ord_N(omega): ${state.order}`,
-    `roots per point: ${state.order}`,
     `distinct visible: ${state.distinctCount} / ${state.n}`,
     `gcd(N, omega): ${state.gcdOmegaN}`,
     `gcd(N, omega - 1): ${state.gcdOmegaMinusOne}`,
