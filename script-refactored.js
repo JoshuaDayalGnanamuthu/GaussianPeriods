@@ -38,6 +38,7 @@ const statusText = document.getElementById('status');
 const prevButton = document.getElementById('prevButton');
 const nextButton = document.getElementById('nextButton');
 const downloadButton = document.getElementById('downloadButton');
+const downloadCSVButton = document.getElementById('downloadCSV');
 
 let colorPalette = [];
 
@@ -88,6 +89,37 @@ function downloadImage() {
     a.click();
     URL.revokeObjectURL(url);
   }, 'image/png');
+}
+
+function downloadCSV() {
+  const savedState = state.history[state.currentHistoryIndex];
+  if (!savedState || !state.points.length) {
+    alert('No data to download');
+    return;
+  }
+
+  const rows = [['k', 'Real Part', 'Imaginary Part', 'Color']];
+
+  for (const p of state.points) {
+    const color = getColorClass(p, state.colorCount);
+    rows.push([
+      p.k,
+      p.real.toFixed(10),
+      p.imag.toFixed(10),
+      color
+    ]);
+  }
+
+  const csv = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = savedState
+    ? `gaussian-period-n${savedState.n}-w${savedState.w}-c${savedState.c}.csv`
+    : `gaussian-period.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function plot() {
@@ -216,6 +248,7 @@ function setupEventListeners() {
   });
 
   downloadButton.addEventListener('click', downloadImage);
+  downloadCSVButton.addEventListener('click', downloadCSV);
 
   attachMouseEvents(drawWrapped);
   attachWheelEvent(drawWrapped);
