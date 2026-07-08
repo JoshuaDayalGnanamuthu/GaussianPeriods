@@ -1,5 +1,6 @@
 const colorCache = new Map();
 
+// HSV to RGB conversion with cache (avoids repeated color calculations)
 export function hsvToRgb(h, s, v) {
   const key = `${h},${s},${v}`;
   if (colorCache.has(key)) return colorCache.get(key);
@@ -21,6 +22,7 @@ export function hsvToRgb(h, s, v) {
   return rgb;
 }
 
+// Generate evenly-spaced hue palette with given color count
 export function buildPalette(colorCount) {
   const palette = [];
   for (let i = 0; i < colorCount; i++) {
@@ -29,6 +31,7 @@ export function buildPalette(colorCount) {
   return palette;
 }
 
+// Map point index to color class via modular arithmetic
 export function getColorClass(point, colorModulus) {
   return ((point.k % colorModulus) + colorModulus) % colorModulus;
 }

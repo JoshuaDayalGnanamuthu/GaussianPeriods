@@ -1,3 +1,5 @@
+// Spatial hash grid for O(1) approximate nearest-neighbor queries
+// Points are bucketed by screen coordinates divided into 10x10 cells
 const HOVER_CELL = 10;
 let hoverGrid = new Map();
 
@@ -24,6 +26,7 @@ export function addHoverPoint(sx, sy, point, colorClass) {
   });
 }
 
+// Find nearest point within fixed radius; search expands to adjacent cells only
 export function findNearestHoverPoint(mouseX, mouseY, pointCount) {
   const cx = (mouseX / HOVER_CELL) | 0;
   const cy = (mouseY / HOVER_CELL) | 0;
@@ -43,6 +46,7 @@ export function findNearestHoverPoint(mouseX, mouseY, pointCount) {
     }
   }
 
+  // Adaptive radius: smaller for dense point clouds to prevent crowding
   const radius = pointCount > 8000 ? 5 : 10;
   return bestDist <= radius ? best : null;
 }

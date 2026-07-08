@@ -4,6 +4,8 @@ import { buildPalette } from './color-utils.js';
 import { computeAsync } from './worker-manager.js';
 import { updateUrl, updateColorFilterOptions, getSelectedColors as urlGetSelectedColors } from './url-state.js';
 
+// Validate n, w, c parameters before computing
+// Rules: w and n coprime (required for primitive root), colors divides n (residue-class coloring)
 export function validateInput(n, w, c, statusText) {
   if (!Number.isInteger(n) || !Number.isInteger(w) || !Number.isInteger(c)) {
     statusText.textContent = 'n, w, and colors must be integers.';
@@ -37,6 +39,7 @@ export function validateInput(n, w, c, statusText) {
   return true;
 }
 
+// Validate recoloring with new color count on existing plot
 export function validateRecolorInput(newC, n, statusText) {
   if (!Number.isInteger(newC) || newC < 1) {
     statusText.textContent = 'The color modulus must be a positive integer.';

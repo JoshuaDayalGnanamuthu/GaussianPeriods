@@ -1,3 +1,4 @@
+// Euclidean algorithm for greatest common divisor
 export function gcd(a, b) {
   while (b) {
     const t = b;
@@ -7,6 +8,7 @@ export function gcd(a, b) {
   return a;
 }
 
+// Extended Euclidean algorithm: finds modular inverse of w modulo n
 export function modInverse(w, n) {
   let [oldR, r, oldS, s] = [w, n, 1, 0];
   while (r) {
@@ -17,6 +19,7 @@ export function modInverse(w, n) {
   return oldR === 1 ? ((oldS % n) + n) % n : null;
 }
 
+// Count unique points by rounding to precision decimal places
 export function countDistinctPoints(pts, precision = 6) {
   const seen = new Set();
   for (const p of pts) {

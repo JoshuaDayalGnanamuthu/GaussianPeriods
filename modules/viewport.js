@@ -1,6 +1,8 @@
 const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 200;
 
+// Zoom while keeping a world point fixed on screen under mouse cursor
+// Converts screen → world before zoom, then world → screen after to maintain position
 export function zoomAt(state, mouseX, mouseY, newZoom) {
   newZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
   const worldX = (mouseX - state.panX) / state.zoomFactor;

@@ -4,6 +4,7 @@ import { clearHoverGrid, addHoverPoint, findNearestHoverPoint } from './hover-sy
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+// Handle DPI scaling and canvas resize to match CSS dimensions
 export function syncCanvasSize(state) {
   const rect = canvas.getBoundingClientRect();
   const newDpr = window.devicePixelRatio || 1;
@@ -35,6 +36,7 @@ export function getCanvasContext() {
   return ctx;
 }
 
+// Render points on canvas with zoom/pan transforms and color filtering
 export function draw(state, colorPalette, selectedColors = new Set()) {
   syncCanvasSize(state);
 
@@ -51,6 +53,7 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
   ctx.translate(state.panX, state.panY);
   ctx.scale(state.zoomFactor, state.zoomFactor);
 
+  // Draw crosshairs (adjust for visible viewport)
   const visL = (0 - state.panX) / state.zoomFactor;
   const visR = (width - state.panX) / state.zoomFactor;
   const visT = (0 - state.panY) / state.zoomFactor;
@@ -70,6 +73,7 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
     return;
   }
 
+  // Autoscale complex plane to fit canvas
   let maxAbs = 0;
   for (const p of state.points) {
     const a = Math.hypot(p.real, p.imag);
@@ -83,6 +87,7 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
 
   const showAll = selectedColors.size === 0;
 
+  // Render as circles for <8k points, pixels for larger sets (performance optimization)
   if (!bigData) {
     const r = radius / state.zoomFactor;
     const TAU = 2 * Math.PI;

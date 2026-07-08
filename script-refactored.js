@@ -1,3 +1,6 @@
+// Main orchestration: imports modules and wires event flow
+// Delegates computation to worker, rendering to canvas, and state to central store
+
 import { evaluate } from 'https://cdn.jsdelivr.net/npm/mathjs@13.2.0/+esm';
 import { state } from './modules/state.js';
 import { gcd, modInverse, countDistinctPoints } from './modules/math-utils.js';
@@ -46,6 +49,7 @@ function updateHistoryButtonsUI() {
   updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
 }
 
+// Add computation to history and update URL
 function saveState(newState) {
   const result = saveStateUrl(newState, state.history, state.currentHistoryIndex);
   state.history = result.history;
@@ -53,6 +57,7 @@ function saveState(newState) {
   updateHistoryButtonsUI();
 }
 
+// Navigate history: restore UI, points, and palette from saved state
 function loadState(index) {
   if (index < 0 || index >= state.history.length) return;
   state.currentHistoryIndex = index;
@@ -122,6 +127,7 @@ function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
+// Compute Gaussian period points asynchronously, save result, and render
 function plot() {
   const n = evaluate(nInput.value);
   const w = evaluate(wInput.value);
@@ -146,6 +152,7 @@ function plot() {
 
     updateColorFilterOptions(colorFilter, c);
 
+    // Pack computation metadata alongside points for history
     const newState = {
       n, w, c,
       points: pts,
@@ -168,6 +175,7 @@ function plot() {
   });
 }
 
+// Change color count without recomputing points (called on color input change)
 function recolorCurrentPlot() {
   if (state.points.length === 0 || state.currentHistoryIndex < 0) return;
 
@@ -203,6 +211,7 @@ function setupEventListeners() {
     plot();
   });
 
+  // Debounce color input to avoid recomputing on every keystroke
   let recolorTimer = null;
   cInput.addEventListener('input', () => {
     clearTimeout(recolorTimer);
@@ -219,6 +228,7 @@ function setupEventListeners() {
     requestDraw(drawWrapped);
   });
 
+  // Show hover tooltip with point info using spatial hash grid query
   canvas.addEventListener('mousemove', e => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
