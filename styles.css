@@ -78,13 +78,24 @@ canvas {
   border-color: #555;
 }
 
-h1 {
+h1, .home-link {
   margin: 0 0 0.5rem;
   font-size: 1.6rem;
   font-weight: 400;
   letter-spacing: 0.08em;
   text-align: center;
   color: #fff;
+}
+
+.home-link {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.home-link:hover {
+  color: #ccc;
 }
 
 .grid {
