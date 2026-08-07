@@ -133,8 +133,19 @@
           Since each root of unity <em>ζ</em><sub>n</sub><sup>j</sup> = <em>e</em><sup>2π<em>ij</em>/<em>n</em></sup> is a complex number,
           the period <em>η</em><sub>k</sub> is also a complex number with real and imaginary components. The visualization plots these periods
           on the complex plane as points, where the x-axis represents the real part and the y-axis represents the imaginary part.
-          Each point is colored according to its equivalence class, using an evenly-spaced hue palette that creates visually distinct groups.
         </p>
+
+        <div class="color-assignment">
+          <h4>Color Assignment</h4>
+          <p>Each point <em>k</em> is assigned a color based on its index using modular arithmetic:</p>
+          <div class="equation" id="eq-color-mod"></div>
+          <p>
+            where <em>c</em> is the number of colors and the result is an integer from 0 to <em>c</em>−1.
+            For example, with <em>c</em>=3: point 0 gets color 0, point 1 gets color 1, point 2 gets color 2,
+            point 3 gets color 0 again, and so on. This creates a repeating pattern of distinct colors
+            that cycles through the evenly-spaced hue palette.
+          </p>
+        </div>
       </div>
 
       <div class="coloring-demo">

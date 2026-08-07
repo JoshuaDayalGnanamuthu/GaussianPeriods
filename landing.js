@@ -20,6 +20,11 @@ function initEquations() {
   const eqColoring = `\\eta_k = \\sum_{j \\in C_k} \\zeta_n^j = \\sum_{j \\in C_k} e^{2\\pi ij/n} \\in \\mathbb{Z}[\\zeta_n]`;
   const coloringEq = document.getElementById('eq-coloring');
   if (coloringEq) katex.render(eqColoring, coloringEq);
+
+  // Color modulus equation
+  const eqColorMod = `\\text{color}(k) = k \\bmod c`;
+  const colorModEq = document.getElementById('eq-color-mod');
+  if (colorModEq) katex.render(eqColorMod, colorModEq);
 }
 
 // Minimal animated background

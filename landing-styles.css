@@ -318,6 +318,19 @@ body {
   font-style: italic;
 }
 
+.color-assignment {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #333;
+}
+
+.color-assignment h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
 .coloring-demo {
   background: #0a0a0a;
   border: 1px solid #333;
