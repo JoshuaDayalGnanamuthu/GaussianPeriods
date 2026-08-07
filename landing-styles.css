@@ -52,7 +52,7 @@ body {
   transition: color 0.2s ease;
   border: 1px solid #666;
   padding: 0.4rem 1rem;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .nav-link:hover {
@@ -113,7 +113,7 @@ body {
   background: #fff;
   color: #000;
   text-decoration: none;
-  border-radius: 0;
+  border-radius: 4px;
   font-weight: 500;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -154,7 +154,7 @@ body {
   font-size: 2.2rem;
   margin-bottom: 3rem;
   color: #fff;
-  text-align: left;
+  text-align: center;
   font-weight: 400;
   letter-spacing: 0.05em;
 }
@@ -186,7 +186,7 @@ body {
 .equation-block {
   background: #0a0a0a;
   border: 1px solid #333;
-  border-radius: 0;
+  border-radius: 4px;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -221,7 +221,7 @@ body {
 .math-card {
   background: #0a0a0a;
   border: 1px solid #333;
-  border-radius: 0;
+  border-radius: 4px;
   padding: 2rem;
   transition: all 0.2s ease;
   display: flex;
@@ -268,7 +268,7 @@ body {
   height: 400px;
   background: #0a0a0a;
   border: 1px solid #333;
-  border-radius: 0;
+  border-radius: 4px;
   display: block;
 }
 
@@ -290,6 +290,72 @@ body {
   font-style: italic;
 }
 
+/* Coloring Section */
+.coloring-explanation {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.coloring-explanation h3 {
+  color: #fff;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.coloring-explanation p {
+  color: #bbb;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+.coloring-explanation em {
+  color: #fff;
+  font-style: italic;
+}
+
+.coloring-demo {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 2rem;
+}
+
+.coloring-demo h3 {
+  color: #fff;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.coloring-demo > p:first-of-type {
+  color: #bbb;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.coloring-canvas {
+  width: 100%;
+  height: 450px;
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 4px;
+  display: block;
+  margin: 1.5rem 0;
+}
+
+.demo-description {
+  color: #888;
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: center;
+  margin: 1.5rem 0 0 0;
+}
+
 /* Examples Grid */
 .examples-grid {
   display: grid;
@@ -301,7 +367,7 @@ body {
 .example-card {
   background: #0a0a0a;
   border: 1px solid #333;
-  border-radius: 0;
+  border-radius: 4px;
   padding: 2rem;
   transition: all 0.2s ease;
 }
@@ -348,7 +414,7 @@ body {
   background: #0a0a0a;
   border-left: 1px solid #555;
   padding: 1.5rem;
-  border-radius: 0;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
@@ -382,7 +448,7 @@ body {
   background: #0a0a0a;
   border: 1px solid #333;
   padding: 2rem;
-  border-radius: 0;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 

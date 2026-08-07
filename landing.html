@@ -106,8 +106,42 @@
     </div>
   </section>
 
+  <!-- Coloring Section -->
+  <section class="section section-alt" id="coloring">
+    <div class="container">
+      <h2>Understanding the Coloring</h2>
+
+      <div class="coloring-explanation">
+        <h3>Computing and Visualizing Gaussian Periods</h3>
+        <p>
+          Gaussian periods are formed by partitioning the <em>n</em>-th roots of unity based on a multiplicative character.
+          For a given parameter <em>ω</em>, the roots are grouped into equivalence classes determined by the orbits of indices under
+          multiplication by <em>ω</em> modulo <em>n</em>. Each equivalence class generates a distinct Gaussian period, which is computed
+          as the sum of all roots of unity in that class:
+        </p>
+        <div class="equation" id="eq-coloring"></div>
+        <p>
+          Since each root of unity <em>ζ</em><sub>n</sub><sup>j</sup> = <em>e</em><sup>2π<em>ij</em>/<em>n</em></sup> is a complex number,
+          the period <em>η</em><sub>k</sub> is also a complex number with real and imaginary components. The visualization plots these periods
+          on the complex plane as points, where the x-axis represents the real part and the y-axis represents the imaginary part.
+          Each point is colored according to its equivalence class, using an evenly-spaced hue palette that creates visually distinct groups.
+        </p>
+      </div>
+
+      <div class="coloring-demo">
+        <h3>Interactive Example: n=12, ω=7</h3>
+        <p>Below is an animated visualization showing how the 12th roots of unity are partitioned and colored:</p>
+        <canvas id="coloringCanvas" class="coloring-canvas"></canvas>
+        <p class="demo-description">
+          The animation shows: (1) all 12 roots plotted on the unit circle, (2) equivalence classes determined by the multiplicative action of ω=7,
+          (3) roots grouped and colored by their period. Watch as the grouping structure emerges.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <!-- Examples Section -->
-  <section class="section section-alt" id="examples">
+  <section class="section" id="examples">
     <div class="container">
       <h2>Examples</h2>
       <div class="examples-grid">

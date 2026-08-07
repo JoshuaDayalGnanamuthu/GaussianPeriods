@@ -25,6 +25,10 @@ function initEquations() {
 
   const ex3 = `\\eta_1 = \\sum_{t=0}^{6} \\zeta_{13}^{2t}`;
   katex.render(ex3, document.getElementById('ex3'));
+
+  // Coloring/Period equation
+  const eqColoring = `\\eta_k = \\sum_{j \\in C_k} \\zeta_n^j = \\sum_{j \\in C_k} e^{2\\pi ij/n} \\in \\mathbb{Z}[\\zeta_n]`;
+  katex.render(eqColoring, document.getElementById('eq-coloring'));
 }
 
 // Minimal animated background
@@ -254,6 +258,203 @@ class GaussianPeriodsViz {
   }
 }
 
+// HSV to RGB conversion (matching app logic)
+function hsvToRgb(h, s, v) {
+  const c = v * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = v - c;
+  let r = 0, g = 0, b = 0;
+
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+
+  return `rgb(${(r + m) * 255 | 0},${(g + m) * 255 | 0},${(b + m) * 255 | 0})`;
+}
+
+// Animated Coloring Visualization
+class ColoringVisualization {
+  constructor(canvas, n = 12, omega = 7, colorCount = 3) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.n = n;
+    this.omega = omega;
+    this.colorCount = colorCount;
+    this.frameCount = 0;
+    this.pointDelay = 60; // frames between each point appearing
+    this.buildPalette();
+    this.computeResidues();
+    this.computePoints();
+    this.animate();
+  }
+
+  buildPalette() {
+    this.palette = [];
+    for (let i = 0; i < this.colorCount; i++) {
+      this.palette.push(hsvToRgb((360 * i) / this.colorCount, 0.9, 1.0));
+    }
+  }
+
+  computeResidues() {
+    // Compute the multiplicative orbit of 1 under omega mod n
+    this.residues = [];
+    let res = 1;
+    do {
+      this.residues.push(res);
+      res = (res * this.omega) % this.n;
+    } while (res !== 1);
+  }
+
+  computePoints() {
+    if (!this.residues) {
+      this.computeResidues();
+    }
+
+    this.points = [];
+
+    // Precompute cos and sin for all angles
+    const cosA = new Array(this.n);
+    const sinA = new Array(this.n);
+    for (let i = 0; i < this.n; i++) {
+      const angle = 2 * Math.PI * i / this.n;
+      cosA[i] = Math.cos(angle);
+      sinA[i] = Math.sin(angle);
+    }
+
+    // For each k from 0 to n-1, compute point[k] = sum of roots
+    for (let k = 0; k < this.n; k++) {
+      let real = 0;
+      let imag = 0;
+
+      for (const r of this.residues) {
+        const idx = (k * r) % this.n;
+        real += cosA[idx];
+        imag += sinA[idx];
+      }
+
+      const colorIdx = k % this.colorCount;
+
+      this.points.push({
+        index: k,
+        real: real,
+        imag: imag,
+        colorIdx: colorIdx,
+        color: this.palette[colorIdx]
+      });
+    }
+  }
+
+  animate() {
+    // Ensure canvas has dimensions
+    if (this.canvas.width === 0 || this.canvas.height === 0) {
+      this.canvas.width = this.canvas.offsetWidth;
+      this.canvas.height = this.canvas.offsetHeight;
+    }
+
+    // Compute points once
+    if (!this.points) {
+      this.computePoints();
+    }
+
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+
+    if (width === 0 || height === 0) {
+      this.frameCount++;
+      requestAnimationFrame(() => this.animate());
+      return;
+    }
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Clear
+    this.ctx.fillStyle = '#000';
+    this.ctx.fillRect(0, 0, width, height);
+
+    // Draw crosshairs
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    this.ctx.lineWidth = 1;
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, centerY);
+    this.ctx.lineTo(width, centerY);
+    this.ctx.moveTo(centerX, 0);
+    this.ctx.lineTo(centerX, height);
+    this.ctx.stroke();
+
+    // Calculate scale - max distance from origin
+    let maxAbs = 0;
+    for (const p of this.points) {
+      const a = Math.hypot(p.real, p.imag);
+      if (a > maxAbs) maxAbs = a;
+    }
+    if (maxAbs === 0) maxAbs = 1;
+
+    const scale = 0.35 * Math.min(width, height) / maxAbs;
+    const pointRadius = 6;
+
+    // Determine which points should be visible
+    const totalFrames = this.n * this.pointDelay + 60;
+    const cycleFrame = this.frameCount % totalFrames;
+
+    // Draw all points that should be visible by this frame
+    for (let k = 0; k < this.n; k++) {
+      const pt = this.points[k];
+      const appearFrame = k * this.pointDelay;
+
+      if (cycleFrame >= appearFrame) {
+        const x = centerX + pt.real * scale;
+        const y = centerY - pt.imag * scale;
+        const color = pt.color;
+
+        // Fade in when this point appears
+        const timeSinceAppear = cycleFrame - appearFrame;
+        const fadeProgress = Math.min(timeSinceAppear / 10, 1);
+
+        // Draw glow
+        this.ctx.fillStyle = color;
+        this.ctx.globalAlpha = fadeProgress * 0.3;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, pointRadius * 2, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Draw point
+        this.ctx.fillStyle = color;
+        this.ctx.globalAlpha = fadeProgress;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, pointRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Draw label (k = 0, k = 1, etc.) - visible for entire pointDelay duration
+        const fadeOutStart = this.pointDelay - 10; // start fading 10 frames before next point
+        let labelAlpha = 0.8;
+
+        if (timeSinceAppear >= fadeOutStart) {
+          const fadeFrames = this.pointDelay - fadeOutStart;
+          const fadeProgress = (timeSinceAppear - fadeOutStart) / fadeFrames;
+          labelAlpha = 0.8 * (1 - fadeProgress);
+        }
+
+        if (labelAlpha > 0) {
+          this.ctx.fillStyle = color;
+          this.ctx.globalAlpha = labelAlpha;
+          this.ctx.font = 'bold 12px Georgia';
+          this.ctx.textAlign = 'left';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText(`k = ${k}`, x + 12, y - 10);
+        }
+
+        this.ctx.globalAlpha = 1;
+      }
+    }
+
+    this.frameCount++;
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
 // Initialize everything
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize equations
@@ -266,9 +467,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize visualizations
   const vizCanvas1 = document.getElementById('vizCanvas1');
   const vizCanvas2 = document.getElementById('vizCanvas2');
+  const coloringCanvas = document.getElementById('coloringCanvas');
 
   if (vizCanvas1) new UnitCircleViz(vizCanvas1, 12);
   if (vizCanvas2) new GaussianPeriodsViz(vizCanvas2, 12, 2);
+  if (coloringCanvas) new ColoringVisualization(coloringCanvas, 12, 7);
 
   // Smooth scroll behavior for navigation
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -286,6 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('resize', () => {
   const vizCanvas1 = document.getElementById('vizCanvas1');
   const vizCanvas2 = document.getElementById('vizCanvas2');
+  const coloringCanvas = document.getElementById('coloringCanvas');
 
   if (vizCanvas1) {
     vizCanvas1.width = vizCanvas1.offsetWidth;
@@ -294,6 +498,10 @@ window.addEventListener('resize', () => {
   if (vizCanvas2) {
     vizCanvas2.width = vizCanvas2.offsetWidth;
     vizCanvas2.height = vizCanvas2.offsetHeight;
+  }
+  if (coloringCanvas) {
+    coloringCanvas.width = coloringCanvas.offsetWidth;
+    coloringCanvas.height = coloringCanvas.offsetHeight;
   }
 });
 
@@ -301,6 +509,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('load', () => {
   const vizCanvas1 = document.getElementById('vizCanvas1');
   const vizCanvas2 = document.getElementById('vizCanvas2');
+  const coloringCanvas = document.getElementById('coloringCanvas');
 
   if (vizCanvas1) {
     vizCanvas1.width = vizCanvas1.offsetWidth;
@@ -309,5 +518,9 @@ window.addEventListener('load', () => {
   if (vizCanvas2) {
     vizCanvas2.width = vizCanvas2.offsetWidth;
     vizCanvas2.height = vizCanvas2.offsetHeight;
+  }
+  if (coloringCanvas) {
+    coloringCanvas.width = coloringCanvas.offsetWidth;
+    coloringCanvas.height = coloringCanvas.offsetHeight;
   }
 });
