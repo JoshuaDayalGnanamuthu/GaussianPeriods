@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaussian Periods Visualizer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="canvas-wrap">
+      <canvas id="canvas" width="1000" height="750"></canvas>
+      <div id="tooltip"></div>
+    </section>
+
+        <section class="controls">
+      <h1>Gaussian Periods Visualizer</h1>
+
+      <div class="grid">
+        <label>N<input id="nInput" type="text" min="2"/></label>
+
+        <label>omega<input id="wInput" type="text" min="1"/></label>
+
+        <label>colors<input id="cInput" type="text" min="1"/></label>
+
+        <label>Track k<input id="kInput" type="text" placeholder="Enter k value" /></label>
+
+        <label>
+          visible colors (Hold Cmd or Ctrl)
+          <select id="colorFilter" multiple size="6"></select>
+        </label>
+
+        <label>
+          <div class="label-with-info">
+            Point size
+            <span class="info-icon" title="Large point sizes with many points may impact performance">ⓘ</span>
+          </div>
+          <div class="slider-container">
+            <input id="pointSizeSlider" type="range" min="0.5" max="10" step="0.1" value="1" />
+            <span id="pointSizeValue">1.0x</span>
+          </div>
+        </label>
+
+        <button id="plotButton">Plot</button>
+
+        <div class="playback-controls">
+          <button id="playButton" type="button">▶ Play</button>
+          <button id="pauseButton" type="button" style="display: none;">⏸ Pause</button>
+          <label>
+            Speed
+            <div class="slider-container">
+              <input id="speedSlider" type="range" min="0.1" max="10" step="0.1" value="1" />
+              <span id="speedValue">1.0x</span>
+            </div>
+          </label>
+        </div>
+
+        <button id="downloadButton">Save PNG</button>
+        <button id="downloadCSV">Download CSV</button>
+
+        <div class="history-buttons">
+          <button id="prevButton" type="button">Previous</button>
+          <button id="nextButton" type="button">Next</button>
+        </div>
+      </div>
+
+      <p id="status">Enter coprime n and w, then plot.</p>
+    </section>
+  </main>
+
+  <script type="module" src="script-refactored.js"></script>
+</body>
+</html>
