@@ -4,9 +4,9 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #111;
-  color: #f4f4f4;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #000;
+  color: #fff;
 }
 
 .app {
@@ -21,9 +21,9 @@ body {
   flex: 1;
   min-width: 0;
   border: 1px solid #333;
-  border-radius: 14px;
+  border-radius: 0;
   overflow: hidden;
-  background: black;
+  background: #000;
   position: relative;
 }
 
@@ -33,10 +33,10 @@ body {
   pointer-events: none;
   z-index: 10;
 
-  background: rgba(20, 20, 20, 0.92);
-  color: white;
+  background: rgba(10, 10, 10, 0.95);
+  color: #fff;
   border: 1px solid #555;
-  border-radius: 8px;
+  border-radius: 0;
 
   padding: 0.45rem 0.6rem;
   font-size: 0.75rem;
@@ -55,9 +55,9 @@ canvas {
 .controls {
   width: 300px;
   flex-shrink: 0;
-  background: #1d1d1d;
+  background: #0a0a0a;
   border: 1px solid #333;
-  border-radius: 14px;
+  border-radius: 0;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -67,7 +67,9 @@ canvas {
 
 h1 {
   margin: 0 0 0.25rem;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
 }
 
 .grid {
@@ -80,39 +82,46 @@ label {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  font-size: 0.9rem;
-  color: #ccc;
+  font-size: 0.85rem;
+  color: #aaa;
 }
 
 input {
   width: 100%;
   padding: 0.65rem;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid #444;
-  background: #111;
-  color: white;
+  background: #0f0f0f;
+  color: #fff;
   font-size: 1rem;
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 button {
   width: 100%;
-  padding: 0.72rem 1rem;
-  border: 0;
-  border-radius: 10px;
-  background: #03b548;
-  color: white;
-  font-weight: 700;
+  padding: 0.65rem 1rem;
+  border: 1px solid #666;
+  border-radius: 0;
+  background: #fff;
+  color: #000;
+  font-weight: 500;
   cursor: pointer;
+  font-family: Georgia, 'Times New Roman', serif;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
 }
 
 button:hover {
-  background: #54ea63;
+  background: #000;
+  color: #fff;
+  border-color: #999;
 }
 
 #status {
   margin: 0;
-  color: #aaa;
-  font-size: 0.78rem;
+  color: #888;
+  font-size: 0.8rem;
   line-height: 1.6;
   white-space: pre-line;
   overflow-wrap: anywhere;
@@ -125,36 +134,42 @@ button:hover {
 }
 
 .history-buttons button {
-  background: #333;
+  background: #0f0f0f;
+  border-color: #555;
+  color: #ccc;
 }
 
 .history-buttons button:hover {
-  background: #555;
+  background: #1a1a1a;
+  border-color: #888;
+  color: #fff;
 }
 
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 button:disabled:hover {
-  background: #333;
+  background: #fff;
+  color: #000;
 }
 
 select {
   width: 100%;
   padding: 0.5rem;
-  border-radius: 15px;
+  border-radius: 0;
   border: 1px solid #444;
-  background: #111;
-  color: white;
+  background: #0f0f0f;
+  color: #fff;
   font-size: 0.95rem;
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 select option {
   padding: 0.35rem;
   text-align: center;
-  border-radius: 5px;
+  border-radius: 0;
 }
 
 .label-with-info {
@@ -171,13 +186,13 @@ select option {
   width: 16px;
   height: 16px;
   font-size: 0.75rem;
-  color: #666;
+  color: #555;
   cursor: help;
   transition: color 0.2s;
 }
 
 .info-icon:hover {
-  color: #999;
+  color: #888;
 }
 
 .slider-container {
@@ -190,8 +205,8 @@ input[type="range"] {
   flex: 1;
   width: auto;
   padding: 0;
-  height: 6px;
-  border-radius: 3px;
+  height: 5px;
+  border-radius: 0;
   background: #333;
   outline: none;
   -webkit-appearance: none;
@@ -201,42 +216,43 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #03b548;
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  background: #fff;
+  border: 1px solid #666;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: #54ea63;
+  background: #ddd;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #03b548;
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  background: #fff;
+  border: 1px solid #666;
   cursor: pointer;
-  border: none;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 input[type="range"]::-moz-range-thumb:hover {
-  background: #54ea63;
+  background: #ddd;
 }
 
 #pointSizeValue {
-  font-size: 0.85rem;
-  color: #999;
+  font-size: 0.8rem;
+  color: #777;
   min-width: 32px;
   text-align: right;
 }
 
 #speedValue {
   font-size: 0.8rem;
-  color: #888;
+  color: #777;
 }
 
 .playback-controls {
@@ -244,28 +260,36 @@ input[type="range"]::-moz-range-thumb:hover {
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: #262626;
-  border-radius: 10px;
+  background: #0f0f0f;
+  border-radius: 0;
+  border: 1px solid #333;
 }
 
 .playback-controls button {
   width: 100%;
-  padding: 0.7rem;
-  background: #03b548;
-  border: 0;
-  border-radius: 10px;
-  color: white;
-  font-weight: 700;
+  padding: 0.6rem;
+  background: #fff;
+  color: #000;
+  border: 1px solid #666;
+  border-radius: 0;
+  font-weight: 500;
   cursor: pointer;
+  font-family: Georgia, 'Times New Roman', serif;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
 }
 
 .playback-controls button:hover {
-  background: #54ea63;
+  background: #000;
+  color: #fff;
+  border-color: #999;
 }
 
 .playback-controls label {
   margin-bottom: 0;
   gap: 0.3rem;
+  color: #aaa;
 }
 
 @media (max-width: 720px) {
