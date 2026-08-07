@@ -356,6 +356,59 @@ body {
   margin: 1.5rem 0 0 0;
 }
 
+/* Computation Demo */
+.computation-demo {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+
+.computation-demo h3 {
+  color: #fff;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.computation-demo > p {
+  color: #aaa;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.computation-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.computation-formula {
+  font-size: 0.95rem;
+  color: #fff;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.computation-canvas {
+  width: 100%;
+  height: 350px;
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 4px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .computation-container {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Examples Grid */
 .examples-grid {
   display: grid;
@@ -368,8 +421,11 @@ body {
   background: #0a0a0a;
   border: 1px solid #333;
   border-radius: 4px;
-  padding: 2rem;
+  padding: 0;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .example-card:hover {
@@ -379,27 +435,33 @@ body {
 
 .example-card h3 {
   color: #fff;
-  margin-bottom: 1rem;
+  padding: 1rem;
+  margin: 0;
   font-family: 'Courier New', monospace;
   font-size: 1.1rem;
   font-weight: 500;
+  background: #000;
+  border-bottom: 1px solid #333;
 }
 
-.example-math {
+.example-image {
+  flex: 1;
+  min-height: 300px;
+  background: #000;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 100px;
-  margin: 1.5rem 0;
-  font-size: 1em;
+  justify-content: center;
+  color: #666;
+  font-size: 0.9rem;
+  padding: 0;
+  overflow: hidden;
 }
 
-.example-note {
-  font-size: 0.85rem;
-  color: #888;
-  text-align: center;
-  margin-top: 1rem;
-  font-style: italic;
+.example-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Properties Grid */

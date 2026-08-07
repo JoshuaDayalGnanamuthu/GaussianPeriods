@@ -103,6 +103,15 @@
         </div>
         <canvas id="vizCanvas2" class="viz-canvas"></canvas>
       </div>
+
+      <div class="computation-demo">
+        <h3>Point Computation Step-by-Step</h3>
+        <p>Each point is computed as a sum of roots of unity. Watch as the computation unfolds:</p>
+        <div class="computation-container">
+          <div class="computation-formula" id="computationFormula"></div>
+          <canvas id="computationCanvas" class="computation-canvas"></canvas>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -146,69 +155,22 @@
       <h2>Examples</h2>
       <div class="examples-grid">
         <div class="example-card">
-          <h3>n=5, ω=2</h3>
-          <div class="example-math" id="ex1"></div>
-          <p class="example-note">The quadratic periods of the 5th cyclotomic field</p>
+          <h3>n=1481151, ω=54184, c=21</h3>
+          <div class="example-image">
+            <img src="images/gaussian-period-n1481151-w54184-c21.png" alt="n=1481151, ω=54184, c=21">
+          </div>
         </div>
         <div class="example-card">
-          <h3>n=7, ω=3</h3>
-          <div class="example-math" id="ex2"></div>
-          <p class="example-note">The periods of the 7th roots of unity with quadratic index</p>
+          <h3>n=455175, ω=3599, c=289</h3>
+          <div class="example-image">
+            <img src="images/gaussian-period-n455175-w3599-c289.png" alt="n=455175, ω=3599, c=289">
+          </div>
         </div>
         <div class="example-card">
-          <h3>n=13, ω=2</h3>
-          <div class="example-math" id="ex3"></div>
-          <p class="example-note">The quadratic periods exhibit beautiful symmetry and algebraic structure</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Properties Section -->
-  <section class="section" id="properties">
-    <div class="container">
-      <h2>Key Properties</h2>
-      <div class="properties-grid">
-        <div class="property">
-          <h4>Algebraic Integers</h4>
-          <p>Gaussian periods are roots of monic polynomials with integer coefficients, making them algebraic integers.</p>
-        </div>
-        <div class="property">
-          <h4>Galois Invariance</h4>
-          <p>Periods are closed under the Galois group action of the cyclotomic field, preserving their algebraic structure.</p>
-        </div>
-        <div class="property">
-          <h4>Linear Independence</h4>
-          <p>Over the rationals, periods generate a vector space that reveals the arithmetic of the cyclotomic field.</p>
-        </div>
-        <div class="property">
-          <h4>Computational Interest</h4>
-          <p>Understanding periods aids in computing class numbers and investigating class field theory.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Applications -->
-  <section class="section section-alt" id="applications">
-    <div class="container">
-      <h2>Why Visualize?</h2>
-      <div class="applications">
-        <div class="app-item">
-          <h3>Intuitive Understanding</h3>
-          <p>Seeing the roots on the complex plane and their grouping patterns makes abstract algebra tangible and memorable.</p>
-        </div>
-        <div class="app-item">
-          <h3>Pattern Recognition</h3>
-          <p>Visual patterns reveal symmetries and relationships that might be hidden in purely algebraic formulations.</p>
-        </div>
-        <div class="app-item">
-          <h3>Educational Value</h3>
-          <p>Interactive exploration helps students build intuition for cyclotomic fields and Galois theory from first principles.</p>
-        </div>
-        <div class="app-item">
-          <h3>Research Tool</h3>
-          <p>Quickly compute and explore Gaussian periods for arbitrary parameters to discover new patterns and relationships.</p>
+          <h3>n=357193, ω=8862, c=113</h3>
+          <div class="example-image">
+            <img src="images/gaussian-period-n357193-w8862-c113.png" alt="n=357193, ω=8862, c=113">
+          </div>
         </div>
       </div>
     </div>

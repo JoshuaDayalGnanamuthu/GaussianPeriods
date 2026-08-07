@@ -16,19 +16,10 @@ function initEquations() {
   const eqMinimal = `\\text{min}_\\mathbb{Q}(\\eta_a) = \\prod_{\\sigma \\in G} (x - \\sigma(\\eta_a))`;
   katex.render(eqMinimal, document.getElementById('eq-minimal'));
 
-  // Examples
-  const ex1 = `\\eta_1 = \\zeta_5 + \\zeta_5^4, \\quad \\eta_2 = \\zeta_5^2 + \\zeta_5^3`;
-  katex.render(ex1, document.getElementById('ex1'));
-
-  const ex2 = `\\eta_1 + \\eta_2 = -1, \\quad \\eta_1 \\eta_2 = -2`;
-  katex.render(ex2, document.getElementById('ex2'));
-
-  const ex3 = `\\eta_1 = \\sum_{t=0}^{6} \\zeta_{13}^{2t}`;
-  katex.render(ex3, document.getElementById('ex3'));
-
   // Coloring/Period equation
   const eqColoring = `\\eta_k = \\sum_{j \\in C_k} \\zeta_n^j = \\sum_{j \\in C_k} e^{2\\pi ij/n} \\in \\mathbb{Z}[\\zeta_n]`;
-  katex.render(eqColoring, document.getElementById('eq-coloring'));
+  const coloringEq = document.getElementById('eq-coloring');
+  if (coloringEq) katex.render(eqColoring, coloringEq);
 }
 
 // Minimal animated background
@@ -455,6 +446,214 @@ class ColoringVisualization {
   }
 }
 
+// Computation Visualization - Shows step-by-step computation
+class ComputationVisualization {
+  constructor(canvas, formulaElement, n = 12, omega = 7) {
+    this.canvas = canvas;
+    this.formulaElement = formulaElement;
+    this.ctx = canvas.getContext('2d');
+    this.n = n;
+    this.omega = omega;
+    this.frameCount = 0;
+    this.pointDuration = 120; // frames per point
+    this.computeResidues();
+    this.computePoints();
+    this.animate();
+  }
+
+  computeResidues() {
+    this.residues = [];
+    let res = 1;
+    do {
+      this.residues.push(res);
+      res = (res * this.omega) % this.n;
+    } while (res !== 1);
+  }
+
+  computePoints() {
+    this.points = [];
+    const cosA = new Array(this.n);
+    const sinA = new Array(this.n);
+    for (let i = 0; i < this.n; i++) {
+      const angle = 2 * Math.PI * i / this.n;
+      cosA[i] = Math.cos(angle);
+      sinA[i] = Math.sin(angle);
+    }
+
+    for (let k = 0; k < this.n; k++) {
+      const terms = [];
+      let realSum = 0;
+      let imagSum = 0;
+
+      for (const r of this.residues) {
+        const idx = (k * r) % this.n;
+        const real = cosA[idx];
+        const imag = sinA[idx];
+        terms.push({ real, imag, idx, r });
+        realSum += real;
+        imagSum += imag;
+      }
+
+      this.points.push({
+        k: k,
+        terms: terms,
+        real: realSum,
+        imag: imagSum
+      });
+    }
+  }
+
+  updateFormula(pointData) {
+    let html = `<div style="line-height: 1.8;">`;
+    html += `<div style="color: #aaa; margin-bottom: 0.5rem;">η<sub>${pointData.k}</sub> = Σ ζ<sub>12</sub><sup>(<span style="color: #fff;">${pointData.k}</span>·r)</sup></div>`;
+    html += `<div style="color: #aaa; margin-bottom: 1rem;">where r ∈ {${this.residues.join(', ')}}</div>`;
+    html += `<div style="color: #fff; font-weight: 500;">Terms:</div>`;
+
+    pointData.terms.forEach((term, i) => {
+      html += `<div style="color: #bbb; font-size: 0.9rem; margin: 0.3rem 0;">`;
+      html += `ζ<sub>12</sub><sup>${term.idx}</sup> = ${term.real.toFixed(2)} + ${term.imag.toFixed(2)}i`;
+      html += `</div>`;
+    });
+
+    html += `<div style="color: #fff; font-weight: 500; margin-top: 0.8rem;">Result:</div>`;
+    html += `<div style="color: #0f0; font-weight: 500;">η<sub>${pointData.k}</sub> = ${pointData.real.toFixed(2)} + ${pointData.imag.toFixed(2)}i</div>`;
+    html += `</div>`;
+
+    this.formulaElement.innerHTML = html;
+  }
+
+  animate() {
+    if (this.canvas.width === 0 || this.canvas.height === 0) {
+      this.canvas.width = this.canvas.offsetWidth;
+      this.canvas.height = this.canvas.offsetHeight;
+    }
+
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+
+    if (width === 0 || height === 0) {
+      this.frameCount++;
+      requestAnimationFrame(() => this.animate());
+      return;
+    }
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Determine which point we're showing
+    const pointIndex = Math.floor((this.frameCount % (this.pointDuration * this.n)) / this.pointDuration);
+    const pointData = this.points[pointIndex];
+    const frameInPoint = this.frameCount % this.pointDuration;
+
+    // Clear
+    this.ctx.fillStyle = '#000';
+    this.ctx.fillRect(0, 0, width, height);
+
+    // Draw axes
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    this.ctx.lineWidth = 1;
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, centerY);
+    this.ctx.lineTo(width, centerY);
+    this.ctx.moveTo(centerX, 0);
+    this.ctx.lineTo(centerX, height);
+    this.ctx.stroke();
+
+    // Calculate scale
+    let maxAbs = 0;
+    for (const p of this.points) {
+      const a = Math.hypot(p.real, p.imag);
+      if (a > maxAbs) maxAbs = a;
+    }
+    if (maxAbs === 0) maxAbs = 1;
+    const scale = 0.3 * Math.min(width, height) / maxAbs;
+
+    // Update formula display
+    this.updateFormula(pointData);
+
+    // Animation stages
+    const termsRevealDuration = Math.floor(this.pointDuration * 0.6);
+    const sumDuration = this.pointDuration - termsRevealDuration;
+
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd93d'];
+
+    // Draw all previously completed points
+    for (let p = 0; p < pointIndex; p++) {
+      const prevPoint = this.points[p];
+      const resultX = centerX + prevPoint.real * scale;
+      const resultY = centerY - prevPoint.imag * scale;
+
+      this.ctx.fillStyle = '#fff';
+      this.ctx.globalAlpha = 0.6;
+      this.ctx.beginPath();
+      this.ctx.arc(resultX, resultY, 6, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+
+    // Draw individual terms for current point (animated)
+    const termsToShow = Math.min(
+      pointData.terms.length,
+      Math.ceil((frameInPoint / termsRevealDuration) * pointData.terms.length)
+    );
+
+    let cumulativeReal = 0;
+    let cumulativeImag = 0;
+
+    for (let i = 0; i < termsToShow; i++) {
+      const term = pointData.terms[i];
+      const color = colors[i % colors.length];
+
+      // Draw vector from origin to this term
+      const termX = centerX + term.real * scale;
+      const termY = centerY - term.imag * scale;
+
+      this.ctx.strokeStyle = color;
+      this.ctx.globalAlpha = 0.6;
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.moveTo(centerX, centerY);
+      this.ctx.lineTo(termX, termY);
+      this.ctx.stroke();
+
+      // Draw term point
+      this.ctx.fillStyle = color;
+      this.ctx.globalAlpha = 0.8;
+      this.ctx.beginPath();
+      this.ctx.arc(termX, termY, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      cumulativeReal += term.real;
+      cumulativeImag += term.imag;
+    }
+
+    // Draw cumulative sum (result) for current point
+    if (frameInPoint > termsRevealDuration * 0.8) {
+      const progress = Math.min((frameInPoint - termsRevealDuration * 0.8) / (sumDuration * 0.2), 1);
+      const resultX = centerX + pointData.real * scale;
+      const resultY = centerY - pointData.imag * scale;
+
+      // Draw result point
+      this.ctx.fillStyle = '#fff';
+      this.ctx.globalAlpha = progress * 0.9;
+      this.ctx.beginPath();
+      this.ctx.arc(resultX, resultY, 7, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Draw glow
+      this.ctx.strokeStyle = '#fff';
+      this.ctx.globalAlpha = progress * 0.4;
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(resultX, resultY, 12, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+
+    this.ctx.globalAlpha = 1;
+    this.frameCount++;
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
 // Initialize everything
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize equations
@@ -468,10 +667,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const vizCanvas1 = document.getElementById('vizCanvas1');
   const vizCanvas2 = document.getElementById('vizCanvas2');
   const coloringCanvas = document.getElementById('coloringCanvas');
+  const computationCanvas = document.getElementById('computationCanvas');
+  const formulaElement = document.getElementById('computationFormula');
 
   if (vizCanvas1) new UnitCircleViz(vizCanvas1, 12);
   if (vizCanvas2) new GaussianPeriodsViz(vizCanvas2, 12, 2);
   if (coloringCanvas) new ColoringVisualization(coloringCanvas, 12, 7);
+  if (computationCanvas && formulaElement) new ComputationVisualization(computationCanvas, formulaElement, 12, 7);
 
   // Smooth scroll behavior for navigation
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -490,6 +692,7 @@ window.addEventListener('resize', () => {
   const vizCanvas1 = document.getElementById('vizCanvas1');
   const vizCanvas2 = document.getElementById('vizCanvas2');
   const coloringCanvas = document.getElementById('coloringCanvas');
+  const computationCanvas = document.getElementById('computationCanvas');
 
   if (vizCanvas1) {
     vizCanvas1.width = vizCanvas1.offsetWidth;
@@ -502,6 +705,10 @@ window.addEventListener('resize', () => {
   if (coloringCanvas) {
     coloringCanvas.width = coloringCanvas.offsetWidth;
     coloringCanvas.height = coloringCanvas.offsetHeight;
+  }
+  if (computationCanvas) {
+    computationCanvas.width = computationCanvas.offsetWidth;
+    computationCanvas.height = computationCanvas.offsetHeight;
   }
 });
 
@@ -510,6 +717,7 @@ window.addEventListener('load', () => {
   const vizCanvas1 = document.getElementById('vizCanvas1');
   const vizCanvas2 = document.getElementById('vizCanvas2');
   const coloringCanvas = document.getElementById('coloringCanvas');
+  const computationCanvas = document.getElementById('computationCanvas');
 
   if (vizCanvas1) {
     vizCanvas1.width = vizCanvas1.offsetWidth;
@@ -522,5 +730,9 @@ window.addEventListener('load', () => {
   if (coloringCanvas) {
     coloringCanvas.width = coloringCanvas.offsetWidth;
     coloringCanvas.height = coloringCanvas.offsetHeight;
+  }
+  if (computationCanvas) {
+    computationCanvas.width = computationCanvas.offsetWidth;
+    computationCanvas.height = computationCanvas.offsetHeight;
   }
 });
