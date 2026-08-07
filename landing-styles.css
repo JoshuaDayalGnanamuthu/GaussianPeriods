@@ -430,6 +430,12 @@ body {
   margin-top: 2rem;
 }
 
+.examples-grid > a {
+  text-decoration: none;
+  display: block;
+  height: 100%;
+}
+
 .example-card {
   background: #0a0a0a;
   border: 1px solid #333;
@@ -439,6 +445,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 100%;
 }
 
 .example-card:hover {
