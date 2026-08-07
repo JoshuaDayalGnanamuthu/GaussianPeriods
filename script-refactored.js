@@ -38,8 +38,8 @@ const cInput = document.getElementById('cInput');
 const colorFilter = document.getElementById('colorFilter');
 const plotButton = document.getElementById('plotButton');
 const statusText = document.getElementById('status');
-const prevButton = document.getElementById('prevButton');
-const nextButton = document.getElementById('nextButton');
+// const prevButton = document.getElementById('prevButton');
+// const nextButton = document.getElementById('nextButton');
 const downloadButton = document.getElementById('downloadButton');
 const downloadCSVButton = document.getElementById('downloadCSV');
 const pointSizeSlider = document.getElementById('pointSizeSlider');
@@ -64,7 +64,7 @@ function safeEvaluate(expr, displayName) {
 }
 
 function updateHistoryButtonsUI() {
-  updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
+  // updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
 }
 
 // Add computation to history and update URL
@@ -343,8 +343,8 @@ function setupEventListeners() {
     recolorTimer = setTimeout(recolorCurrentPlot, 300);
   });
 
-  prevButton.addEventListener('click', () => loadState(state.currentHistoryIndex - 1));
-  nextButton.addEventListener('click', () => loadState(state.currentHistoryIndex + 1));
+  // prevButton.addEventListener('click', () => loadState(state.currentHistoryIndex - 1));
+  // nextButton.addEventListener('click', () => loadState(state.currentHistoryIndex + 1));
 
   colorFilter.addEventListener('change', () => {
     if (state.currentHistoryIndex >= 0) {
