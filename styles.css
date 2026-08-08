@@ -478,6 +478,7 @@ input[type="range"]::-moz-range-thumb:hover {
   background: transparent;
   border-radius: 0;
   border: none;
+  margin-top: 0.75rem;
 }
 
 .playback-controls button {
