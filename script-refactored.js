@@ -49,8 +49,11 @@ const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
 const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
+const viewAllButton = document.getElementById('viewAllButton');
+const colorPreviewsWrapper = document.getElementById('colorPreviewsWrapper');
 
 let colorPalette = [];
+let selectedColorGroups = new Set();
 
 // Safely evaluate expression and catch parsing/evaluation errors
 function safeEvaluate(expr, displayName) {
@@ -65,6 +68,94 @@ function safeEvaluate(expr, displayName) {
 
 function updateHistoryButtonsUI() {
   // updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
+}
+
+function generateColorPreviews(colorCount, points, colorPalette) {
+  colorPreviewsWrapper.innerHTML = '';
+  selectedColorGroups.clear();
+
+  const previewSize = 80;
+  const canvasScale = 2;
+
+  for (let colorIdx = 0; colorIdx < colorCount; colorIdx++) {
+    const previewCanvas = document.createElement('canvas');
+    previewCanvas.width = previewSize * canvasScale;
+    previewCanvas.height = previewSize * canvasScale;
+    previewCanvas.className = 'color-preview-canvas';
+
+    const ctx = previewCanvas.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, previewSize * canvasScale, previewSize * canvasScale);
+
+    let maxAbs = 0;
+    const colorPoints = points.filter(p => getColorClass(p, colorCount) === colorIdx);
+
+    if (colorPoints.length > 0) {
+      for (const p of colorPoints) {
+        const a = Math.hypot(p.real, p.imag);
+        if (a > maxAbs) maxAbs = a;
+      }
+      if (maxAbs === 0) maxAbs = 1;
+
+      const scale = 0.35 * previewSize / maxAbs;
+      const centerX = (previewSize / 2) * canvasScale;
+      const centerY = (previewSize / 2) * canvasScale;
+      const radius = Math.max(1.5, Math.min(4, scale / 25));
+
+      ctx.fillStyle = colorPalette[colorIdx];
+      for (const p of colorPoints) {
+        const wx = centerX + p.real * scale;
+        const wy = centerY - p.imag * scale;
+        ctx.beginPath();
+        ctx.arc(wx, wy, radius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+
+    const item = document.createElement('div');
+    item.className = 'color-preview-item';
+    item.dataset.colorIndex = colorIdx;
+
+    previewCanvas.style.cursor = 'pointer';
+    previewCanvas.style.width = previewSize + 'px';
+    previewCanvas.style.height = previewSize + 'px';
+
+    const label = document.createElement('div');
+    label.className = 'color-preview-label';
+    label.textContent = `Color ${colorIdx}`;
+
+    item.appendChild(previewCanvas);
+    item.appendChild(label);
+
+    item.addEventListener('click', () => toggleColorGroup(colorIdx));
+    colorPreviewsWrapper.appendChild(item);
+  }
+}
+
+function toggleColorGroup(colorIdx) {
+  if (selectedColorGroups.has(colorIdx)) {
+    selectedColorGroups.delete(colorIdx);
+  } else {
+    selectedColorGroups.add(colorIdx);
+  }
+  updateColorPreviewUI();
+}
+
+function updateColorPreviewUI() {
+  const items = colorPreviewsWrapper.querySelectorAll('.color-preview-item');
+  items.forEach((item, idx) => {
+    if (selectedColorGroups.has(idx)) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  const filteredSet = new Set(selectedColorGroups);
+  requestDraw(() => {
+    const filteredSelected = filteredSet.size === 0 ? new Set() : filteredSet;
+    draw(state, colorPalette, filteredSelected);
+  });
 }
 
 // Add computation to history and update URL
@@ -205,6 +296,7 @@ function plot() {
     saveState(newState);
     updateUrl(n, w, c);
     statusText.textContent = buildStatusText(newState, state.currentHistoryIndex, state.history.length);
+    generateColorPreviews(c, pts, colorPalette);
     requestDraw(drawWrapped);
   });
 }
@@ -321,6 +413,7 @@ function recolorCurrentPlot() {
 
   updateColorFilterOptions(colorFilter, newC);
   savedState.selectedColors = getSelectedColors(colorFilter);
+  generateColorPreviews(newC, state.points, colorPalette);
   updateUrl(savedState.n, savedState.w, newC, true);
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
   requestDraw(drawWrapped);
@@ -328,6 +421,11 @@ function recolorCurrentPlot() {
 
 function setupEventListeners() {
   plotButton.addEventListener('click', plot);
+
+  viewAllButton.addEventListener('click', () => {
+    selectedColorGroups.clear();
+    updateColorPreviewUI();
+  });
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
