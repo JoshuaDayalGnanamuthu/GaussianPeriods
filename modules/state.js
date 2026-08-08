@@ -41,6 +41,8 @@ export const state = {
   animationK: 0,
   animationSpeed: 1,
   animationStartTime: null,
+  animationElapsedTime: 0,
+  lastAnimationFrameTime: null,
   pointsPerSecond: 100,
 
   recolorTimer: null

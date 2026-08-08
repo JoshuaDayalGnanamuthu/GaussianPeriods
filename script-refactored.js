@@ -377,7 +377,7 @@ function animationFrame(timestamp) {
   if (!state.isAnimating) return;
 
   if (state.animationStartTime === null) {
-    state.animationStartTime = timestamp;
+    state.animationStartTime = timestamp - (state.animationElapsedTime || 0);
   }
 
   const elapsed = timestamp - state.animationStartTime;
@@ -390,11 +390,14 @@ function animationFrame(timestamp) {
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
     state.animationStartTime = null;
+    state.animationElapsedTime = 0;
+    state.lastAnimationFrameTime = null;
     requestDraw(drawWrapped);
     return;
   }
 
   state.animationK = newK;
+  state.lastAnimationFrameTime = timestamp;
   requestDraw(drawWrapped);
   requestAnimationFrame(animationFrame);
 }
@@ -406,8 +409,14 @@ function startAnimation() {
     return;
   }
 
+  // If animation finished, reset to beginning
   if (state.animationK >= state.points.length) {
     state.animationK = 0;
+    state.animationStartTime = null;
+    state.animationElapsedTime = 0;
+    state.lastAnimationFrameTime = null;
+  } else {
+    // Resume from pause - just reset start time, keep the elapsed time
     state.animationStartTime = null;
   }
 
@@ -422,6 +431,26 @@ function pauseAnimation() {
   state.isAnimating = false;
   playButton.style.display = 'block';
   pauseButton.style.display = 'none';
+
+  // Store the elapsed time (calculated from the last animation frame's timestamp)
+  if (state.lastAnimationFrameTime !== null && state.animationStartTime !== null) {
+    state.animationElapsedTime = state.lastAnimationFrameTime - state.animationStartTime;
+  }
+
+  // Redraw to show only points up to current animation index
+  requestDraw(drawWrapped);
+}
+
+// Reset animation
+function resetAnimation() {
+  state.isAnimating = false;
+  state.animationK = 0;
+  state.animationStartTime = null;
+  state.animationElapsedTime = 0;
+  state.lastAnimationFrameTime = null;
+  playButton.style.display = 'block';
+  pauseButton.style.display = 'none';
+  requestDraw(drawWrapped);
 }
 
 // Track a specific k point on the plot and display its coordinates
@@ -590,6 +619,8 @@ function setupEventListeners() {
   zoomOutBtn.addEventListener('click', zoomOut);
   boxZoomBtn.addEventListener('click', toggleBoxZoomMode);
   fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+  playButton.addEventListener('dblclick', resetAnimation);
 
   // Box zoom event listeners
   canvas.addEventListener('mousedown', (e) => {

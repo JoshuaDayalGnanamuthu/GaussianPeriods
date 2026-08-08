@@ -74,7 +74,8 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
   }
 
   // Determine how many points to draw (all or up to animation index)
-  const maxK = state.isAnimating ? state.animationK : state.points.length;
+  // If animating or paused mid-animation, show up to animationK; otherwise show all
+  const maxK = state.animationK > 0 ? state.animationK : state.points.length;
 
   // Autoscale complex plane to fit canvas
   let maxAbs = 0;
