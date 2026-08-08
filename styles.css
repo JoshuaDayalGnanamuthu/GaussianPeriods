@@ -20,6 +20,23 @@ body {
   padding: 2rem;
 }
 
+.app.fullscreen {
+  gap: 0;
+  padding: 0;
+}
+
+.app.fullscreen .controls {
+  display: none;
+}
+
+.app.fullscreen .canvas-wrap {
+  padding-bottom: 0;
+}
+
+.app.fullscreen .color-previews-container {
+  display: none;
+}
+
 .canvas-wrap {
   flex: 1;
   min-width: 0;

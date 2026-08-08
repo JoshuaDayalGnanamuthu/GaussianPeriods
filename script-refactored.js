@@ -57,6 +57,8 @@ const resetAxisBtn = document.getElementById('resetAxisBtn');
 const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
 const boxZoomBtn = document.getElementById('boxZoomBtn');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const appElement = document.querySelector('.app');
 
 let boxZoomMode = false;
 let boxZoomStart = null;
@@ -570,6 +572,14 @@ function toggleBoxZoomMode() {
   canvas.style.cursor = boxZoomMode ? 'crosshair' : 'default';
 }
 
+function toggleFullscreen() {
+  appElement.classList.toggle('fullscreen');
+  fullscreenBtn.classList.toggle('active');
+
+  // Trigger resize event to update canvas
+  window.dispatchEvent(new Event('resize'));
+}
+
 function setupEventListeners() {
   plotButton.addEventListener('click', plot);
 
@@ -579,6 +589,7 @@ function setupEventListeners() {
   zoomInBtn.addEventListener('click', zoomIn);
   zoomOutBtn.addEventListener('click', zoomOut);
   boxZoomBtn.addEventListener('click', toggleBoxZoomMode);
+  fullscreenBtn.addEventListener('click', toggleFullscreen);
 
   // Box zoom event listeners
   canvas.addEventListener('mousedown', (e) => {
@@ -649,7 +660,12 @@ function setupEventListeners() {
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft') {
+    if (e.key === 'Escape') {
+      if (appElement.classList.contains('fullscreen')) {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    } else if (e.key === 'ArrowLeft') {
       if (selectedColorGroups.size > 0) {
         e.preventDefault();
         navigateColorGroups('left');
