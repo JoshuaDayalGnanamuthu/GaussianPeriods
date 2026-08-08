@@ -147,6 +147,29 @@ function toggleColorGroup(colorIdx) {
   updateColorPreviewUI();
 }
 
+function navigateColorGroups(direction) {
+  if (selectedColorGroups.size === 0) return;
+
+  const currentColor = Array.from(selectedColorGroups)[0];
+  const colorCount = state.colorCount;
+
+  let nextColor;
+  if (direction === 'left') {
+    nextColor = (currentColor - 1 + colorCount) % colorCount;
+  } else {
+    nextColor = (currentColor + 1) % colorCount;
+  }
+
+  selectedColorGroups.clear();
+  selectedColorGroups.add(nextColor);
+  updateColorPreviewUI();
+
+  const previewItem = colorPreviewsWrapper.querySelector(`[data-color-index="${nextColor}"]`);
+  if (previewItem) {
+    previewItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+}
+
 function updateColorPreviewUI() {
   const items = colorPreviewsWrapper.querySelectorAll('.color-preview-item');
   items.forEach((item, idx) => {
@@ -434,10 +457,21 @@ function setupEventListeners() {
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    if (document.activeElement === colorFilter) return;
-    e.preventDefault();
-    plot();
+    if (e.key === 'ArrowLeft') {
+      if (selectedColorGroups.size > 0) {
+        e.preventDefault();
+        navigateColorGroups('left');
+      }
+    } else if (e.key === 'ArrowRight') {
+      if (selectedColorGroups.size > 0) {
+        e.preventDefault();
+        navigateColorGroups('right');
+      }
+    } else if (e.key === 'Enter') {
+      if (document.activeElement === colorFilter) return;
+      e.preventDefault();
+      plot();
+    }
   });
 
   // Debounce color input to avoid recomputing on every keystroke
