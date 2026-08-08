@@ -10,7 +10,6 @@ export const state = {
   zoomFactor: 1,
   panX: 0,
   panY: 0,
-  pointSizeMultiplier: 1,
 
   // Canvas: dimensions and DPI for proper rendering
   canvasW: 0,

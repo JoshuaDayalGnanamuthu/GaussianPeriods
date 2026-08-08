@@ -42,8 +42,8 @@ const statusText = document.getElementById('status');
 // const nextButton = document.getElementById('nextButton');
 const downloadButton = document.getElementById('downloadButton');
 const downloadCSVButton = document.getElementById('downloadCSV');
-const pointSizeSlider = document.getElementById('pointSizeSlider');
-const pointSizeValue = document.getElementById('pointSizeValue');
+const kSlider = document.getElementById('kSlider');
+const kSliderValue = document.getElementById('kSliderValue');
 const kInput = document.getElementById('kInput');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
@@ -345,6 +345,10 @@ function plot() {
     colorPalette = buildPalette(c);
 
     kInput.value = '';
+    kSlider.max = n - 1;
+    kSlider.value = 0;
+    kSlider.disabled = false;
+    kSliderValue.textContent = '0';
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
 
@@ -722,18 +726,35 @@ function setupEventListeners() {
   // prevButton.addEventListener('click', () => loadState(state.currentHistoryIndex - 1));
   // nextButton.addEventListener('click', () => loadState(state.currentHistoryIndex + 1));
 
-  pointSizeSlider.addEventListener('input', () => {
-    const size = parseFloat(pointSizeSlider.value);
-    state.pointSizeMultiplier = size;
-    pointSizeValue.textContent = size.toFixed(1) + 'x';
-    requestDraw(drawWrapped);
-  });
-
   // Debounce k input to avoid tracking on every keystroke
   let kTrackTimer = null;
   kInput.addEventListener('input', () => {
+    const raw = kInput.value.trim();
+    if (raw && !isNaN(raw)) {
+      const k = parseInt(raw);
+      if (k >= 0 && k <= parseInt(kSlider.max)) {
+        kSlider.value = k;
+        kSliderValue.textContent = k;
+      }
+    } else if (!raw) {
+      kSlider.value = 0;
+      kSliderValue.textContent = '(empty)';
+    }
     clearTimeout(kTrackTimer);
     kTrackTimer = setTimeout(trackKPoint, 200);
+  });
+
+  kSlider.addEventListener('input', () => {
+    const k = parseInt(kSlider.value);
+    kInput.value = k;
+    kSliderValue.textContent = k;
+    if (state.points.length === 0) return;
+    if (k >= 0 && k < state.points.length) {
+      state.trackedK = k;
+      const point = state.points[k];
+      statusText.textContent = `k=${k}: Re ≈ ${point.real.toFixed(6)}, Im ≈ ${point.imag.toFixed(6)}`;
+      requestDraw(drawWrapped);
+    }
   });
 
   playButton.addEventListener('click', startAnimation);

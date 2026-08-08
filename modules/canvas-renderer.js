@@ -87,7 +87,7 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
 
   const scale = 0.42 * Math.min(width, height) / maxAbs;
   const baseRadius = Math.max(1, Math.min(8, scale / 25));
-  const radius = baseRadius * state.pointSizeMultiplier;
+  const radius = baseRadius;
   const bigData = state.points.length > 8000;
 
   const showAll = selectedColors.size === 0;
