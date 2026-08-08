@@ -47,6 +47,8 @@ const kSliderValue = document.getElementById('kSliderValue');
 const kInput = document.getElementById('kInput');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
+const playCounter = document.getElementById('playCounter');
+const pauseCounter = document.getElementById('pauseCounter');
 const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
 const viewAllButton = document.getElementById('viewAllButton');
@@ -393,6 +395,7 @@ function animationFrame(timestamp) {
     state.animationK = state.points.length;
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
+    pauseCounter.style.display = 'none';
     state.animationStartTime = null;
     state.animationElapsedTime = 0;
     state.lastAnimationFrameTime = null;
@@ -402,6 +405,7 @@ function animationFrame(timestamp) {
 
   state.animationK = newK;
   state.lastAnimationFrameTime = timestamp;
+  pauseCounter.textContent = `${newK}/${state.points.length}`;
   requestDraw(drawWrapped);
   requestAnimationFrame(animationFrame);
 }
@@ -427,6 +431,7 @@ function startAnimation() {
   state.isAnimating = true;
   playButton.style.display = 'none';
   pauseButton.style.display = 'block';
+  pauseCounter.style.display = 'inline';
   requestAnimationFrame(animationFrame);
 }
 
@@ -435,6 +440,7 @@ function pauseAnimation() {
   state.isAnimating = false;
   playButton.style.display = 'block';
   pauseButton.style.display = 'none';
+  pauseCounter.style.display = 'none';
 
   // Store the elapsed time (calculated from the last animation frame's timestamp)
   if (state.lastAnimationFrameTime !== null && state.animationStartTime !== null) {
