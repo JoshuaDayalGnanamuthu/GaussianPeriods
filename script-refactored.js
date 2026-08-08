@@ -76,6 +76,11 @@ function generateColorPreviews(colorCount, points, colorPalette) {
   const previewSize = 80;
   const canvasScale = 2;
 
+  // Add start divider
+  const startDivider = document.createElement('div');
+  startDivider.className = 'color-preview-divider';
+  colorPreviewsWrapper.appendChild(startDivider);
+
   for (let colorIdx = 0; colorIdx < colorCount; colorIdx++) {
     const previewCanvas = document.createElement('canvas');
     previewCanvas.width = previewSize * canvasScale;
@@ -135,6 +140,11 @@ function generateColorPreviews(colorCount, points, colorPalette) {
       colorPreviewsWrapper.appendChild(divider);
     }
   }
+
+  // Add end divider
+  const endDivider = document.createElement('div');
+  endDivider.className = 'color-preview-divider';
+  colorPreviewsWrapper.appendChild(endDivider);
 }
 
 function toggleColorGroup(colorIdx) {
