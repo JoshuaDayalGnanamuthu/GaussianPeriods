@@ -35,7 +35,6 @@ const tooltip = document.getElementById('tooltip');
 const nInput = document.getElementById('nInput');
 const wInput = document.getElementById('wInput');
 const cInput = document.getElementById('cInput');
-const colorFilter = document.getElementById('colorFilter');
 const plotButton = document.getElementById('plotButton');
 const statusText = document.getElementById('status');
 // const prevButton = document.getElementById('prevButton');
@@ -53,7 +52,7 @@ const viewAllButton = document.getElementById('viewAllButton');
 const colorPreviewsWrapper = document.getElementById('colorPreviewsWrapper');
 
 let colorPalette = [];
-let selectedColorGroups = new Set();
+let selectedColorGroups = new Set(); // Contains indices of selected color groups
 
 // Safely evaluate expression and catch parsing/evaluation errors
 function safeEvaluate(expr, displayName) {
@@ -211,15 +210,13 @@ function loadState(index) {
   cInput.value = savedState.c;
   kInput.value = '';
 
-  updateColorFilterOptions(colorFilter, savedState.c, savedState.selectedColors);
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
   requestDraw(drawWrapped);
   updateHistoryButtonsUI();
 }
 
 function drawWrapped() {
-  const selectedSet = new Set(getSelectedColors(colorFilter));
-  draw(state, colorPalette, selectedSet);
+  draw(state, colorPalette, selectedColorGroups);
 }
 
 function downloadImage() {
@@ -304,7 +301,6 @@ function plot() {
     kInput.value = '';
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
-    updateColorFilterOptions(colorFilter, c);
 
     // Pack computation metadata alongside points for history
     const newState = {
@@ -319,7 +315,7 @@ function plot() {
       gcdColorsOrder: gcd(c, order),
       omegaInverse: modInverse(w, n),
       computeTime,
-      selectedColors: getSelectedColors(colorFilter)
+      selectedColors: Array.from(selectedColorGroups)
     };
 
     saveState(newState);
@@ -440,8 +436,7 @@ function recolorCurrentPlot() {
   savedState.gcdColorsN = gcd(newC, savedState.n);
   savedState.gcdColorsOrder = gcd(newC, savedState.order);
 
-  updateColorFilterOptions(colorFilter, newC);
-  savedState.selectedColors = getSelectedColors(colorFilter);
+  savedState.selectedColors = Array.from(selectedColorGroups);
   generateColorPreviews(newC, state.points, colorPalette);
   updateUrl(savedState.n, savedState.w, newC, true);
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
@@ -468,7 +463,6 @@ function setupEventListeners() {
         navigateColorGroups('right');
       }
     } else if (e.key === 'Enter') {
-      if (document.activeElement === colorFilter) return;
       e.preventDefault();
       plot();
     }
@@ -483,13 +477,6 @@ function setupEventListeners() {
 
   // prevButton.addEventListener('click', () => loadState(state.currentHistoryIndex - 1));
   // nextButton.addEventListener('click', () => loadState(state.currentHistoryIndex + 1));
-
-  colorFilter.addEventListener('change', () => {
-    if (state.currentHistoryIndex >= 0) {
-      state.history[state.currentHistoryIndex].selectedColors = getSelectedColors(colorFilter);
-    }
-    requestDraw(drawWrapped);
-  });
 
   pointSizeSlider.addEventListener('input', () => {
     const size = parseFloat(pointSizeSlider.value);
