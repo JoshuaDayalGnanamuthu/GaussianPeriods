@@ -44,20 +44,20 @@ function drawGrid(state, scale, width, height, centerX, centerY) {
   const gridSpacing = 1 * scale; // 1 unit in complex coords
   if (gridSpacing < 2) return; // Don't draw grid if spacing too small
 
-  // Calculate visible range in complex coordinates
-  // A canvas point (cx, cy) corresponds to complex coordinate:
-  // real = (cx - centerX) / scale, imag = (centerY - cy) / scale
-  const minReal = Math.floor((0 - centerX) / scale);
-  const maxReal = Math.ceil((width - centerX) / scale);
-  const minImag = Math.floor((centerY - height) / scale);
-  const maxImag = Math.ceil(centerY / scale);
+  // Calculate range with margin to cover pan/zoom area
+  // Extend well beyond visible canvas to handle all pan/zoom scenarios
+  const margin = 1000;
+  const minReal = Math.floor((0 - centerX - margin) / scale);
+  const maxReal = Math.ceil((width - centerX + margin) / scale);
+  const minImag = Math.floor((centerY - height - margin) / scale);
+  const maxImag = Math.ceil((centerY + margin) / scale);
 
   // Draw vertical grid lines (constant real part)
   for (let re = minReal; re <= maxReal; re++) {
     const wx = centerX + re * scale;
     ctx.beginPath();
-    ctx.moveTo(wx, 0);
-    ctx.lineTo(wx, height);
+    ctx.moveTo(wx, -margin);
+    ctx.lineTo(wx, height + margin);
     ctx.stroke();
   }
 
@@ -65,8 +65,8 @@ function drawGrid(state, scale, width, height, centerX, centerY) {
   for (let im = minImag; im <= maxImag; im++) {
     const wy = centerY - im * scale;
     ctx.beginPath();
-    ctx.moveTo(0, wy);
-    ctx.lineTo(width, wy);
+    ctx.moveTo(-margin, wy);
+    ctx.lineTo(width + margin, wy);
     ctx.stroke();
   }
 }
