@@ -47,8 +47,7 @@ const kSliderValue = document.getElementById('kSliderValue');
 const kInput = document.getElementById('kInput');
 const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
-const playCounter = document.getElementById('playCounter');
-const pauseCounter = document.getElementById('pauseCounter');
+const animationCounter = document.getElementById('animationCounter');
 const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
 const viewAllButton = document.getElementById('viewAllButton');
@@ -353,6 +352,7 @@ function plot() {
     kSliderValue.textContent = '0';
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
+    animationCounter.style.display = 'none';
 
     // Pack computation metadata alongside points for history
     const newState = {
@@ -395,7 +395,7 @@ function animationFrame(timestamp) {
     state.animationK = state.points.length;
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
-    pauseCounter.style.display = 'none';
+    animationCounter.style.display = 'none';
     state.animationStartTime = null;
     state.animationElapsedTime = 0;
     state.lastAnimationFrameTime = null;
@@ -405,7 +405,7 @@ function animationFrame(timestamp) {
 
   state.animationK = newK;
   state.lastAnimationFrameTime = timestamp;
-  pauseCounter.textContent = `${newK}/${state.points.length}`;
+  animationCounter.textContent = `${newK}/${state.points.length}`;
   requestDraw(drawWrapped);
   requestAnimationFrame(animationFrame);
 }
@@ -431,7 +431,7 @@ function startAnimation() {
   state.isAnimating = true;
   playButton.style.display = 'none';
   pauseButton.style.display = 'block';
-  pauseCounter.style.display = 'inline';
+  animationCounter.style.display = 'block';
   requestAnimationFrame(animationFrame);
 }
 
@@ -440,7 +440,7 @@ function pauseAnimation() {
   state.isAnimating = false;
   playButton.style.display = 'block';
   pauseButton.style.display = 'none';
-  pauseCounter.style.display = 'none';
+  animationCounter.style.display = 'none';
 
   // Store the elapsed time (calculated from the last animation frame's timestamp)
   if (state.lastAnimationFrameTime !== null && state.animationStartTime !== null) {
@@ -770,6 +770,13 @@ function setupEventListeners() {
     const speed = parseFloat(speedSlider.value);
     state.animationSpeed = speed;
     speedValue.textContent = speed.toFixed(1) + 'x';
+
+    // Adjust animation timing to continue smoothly from current position
+    if (state.isAnimating && state.animationStartTime !== null) {
+      const now = state.lastAnimationFrameTime || performance.now();
+      const pointDuration = 1000 / (state.pointsPerSecond * speed);
+      state.animationStartTime = now - (state.animationK - 1) * pointDuration;
+    }
   });
 
   // Show hover tooltip with point info using spatial hash grid query
