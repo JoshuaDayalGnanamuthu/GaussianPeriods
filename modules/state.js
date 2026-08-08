@@ -10,6 +10,7 @@ export const state = {
   zoomFactor: 1,
   panX: 0,
   panY: 0,
+  showGridlines: true,
 
   // Canvas: dimensions and DPI for proper rendering
   canvasW: 0,

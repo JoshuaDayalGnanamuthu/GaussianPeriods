@@ -626,6 +626,14 @@ function setupEventListeners() {
   zoomInBtn.addEventListener('click', zoomIn);
   zoomOutBtn.addEventListener('click', zoomOut);
   boxZoomBtn.addEventListener('click', toggleBoxZoomMode);
+
+  document.getElementById('gridlineBtn').addEventListener('click', () => {
+    state.showGridlines = !state.showGridlines;
+    const btn = document.getElementById('gridlineBtn');
+    btn.classList.toggle('active', state.showGridlines);
+    requestDraw(drawWrapped);
+  });
+
   fullscreenBtn.addEventListener('click', toggleFullscreen);
 
   playButton.addEventListener('dblclick', resetAnimation);

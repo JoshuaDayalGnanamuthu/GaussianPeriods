@@ -38,6 +38,8 @@ export function getCanvasContext() {
 
 // Draw faint grid lines at 1-unit intervals in complex plane
 function drawGrid(state, scale, width, height, centerX, centerY) {
+  if (!state.showGridlines) return;
+
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
   ctx.lineWidth = 1 / state.zoomFactor;
 
