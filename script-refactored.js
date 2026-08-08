@@ -40,8 +40,6 @@ const plotButton = document.getElementById('plotButton');
 const statusText = document.getElementById('status');
 // const prevButton = document.getElementById('prevButton');
 // const nextButton = document.getElementById('nextButton');
-const downloadButton = document.getElementById('downloadButton');
-const downloadCSVButton = document.getElementById('downloadCSV');
 const kSlider = document.getElementById('kSlider');
 const kSliderValue = document.getElementById('kSliderValue');
 const kInput = document.getElementById('kInput');
@@ -807,9 +805,6 @@ function setupEventListeners() {
     loadParamsFromUrl(nInput, wInput, cInput);
     plot();
   });
-
-  downloadButton.addEventListener('click', downloadImage);
-  downloadCSVButton.addEventListener('click', downloadCSV);
 
   attachMouseEvents(drawWrapped);
   attachWheelEvent(drawWrapped);
