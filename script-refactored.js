@@ -35,7 +35,6 @@ const tooltip = document.getElementById('tooltip');
 const nInput = document.getElementById('nInput');
 const wInput = document.getElementById('wInput');
 const cInput = document.getElementById('cInput');
-const colorFilter = document.getElementById('colorFilter');
 const plotButton = document.getElementById('plotButton');
 const statusText = document.getElementById('status');
 // const prevButton = document.getElementById('prevButton');
@@ -49,8 +48,11 @@ const playButton = document.getElementById('playButton');
 const pauseButton = document.getElementById('pauseButton');
 const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
+const viewAllButton = document.getElementById('viewAllButton');
+const colorPreviewsWrapper = document.getElementById('colorPreviewsWrapper');
 
 let colorPalette = [];
+let selectedColorGroups = new Set(); // Contains indices of selected color groups
 
 // Safely evaluate expression and catch parsing/evaluation errors
 function safeEvaluate(expr, displayName) {
@@ -65,6 +67,123 @@ function safeEvaluate(expr, displayName) {
 
 function updateHistoryButtonsUI() {
   // updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
+}
+
+function generateColorPreviews(colorCount, points, colorPalette) {
+  colorPreviewsWrapper.innerHTML = '';
+  selectedColorGroups.clear();
+
+  const previewSize = 80;
+  const canvasScale = 2;
+
+  for (let colorIdx = 0; colorIdx < colorCount; colorIdx++) {
+    const previewCanvas = document.createElement('canvas');
+    previewCanvas.width = previewSize * canvasScale;
+    previewCanvas.height = previewSize * canvasScale;
+    previewCanvas.className = 'color-preview-canvas';
+
+    const ctx = previewCanvas.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, previewSize * canvasScale, previewSize * canvasScale);
+
+    let maxAbs = 0;
+    const colorPoints = points.filter(p => getColorClass(p, colorCount) === colorIdx);
+
+    if (colorPoints.length > 0) {
+      for (const p of colorPoints) {
+        const a = Math.hypot(p.real, p.imag);
+        if (a > maxAbs) maxAbs = a;
+      }
+      if (maxAbs === 0) maxAbs = 1;
+
+      const scale = 0.35 * previewSize / maxAbs;
+      const centerX = (previewSize / 2) * canvasScale;
+      const centerY = (previewSize / 2) * canvasScale;
+      const radius = Math.max(1.5, Math.min(4, scale / 25));
+
+      ctx.fillStyle = colorPalette[colorIdx];
+      for (const p of colorPoints) {
+        const wx = centerX + p.real * scale;
+        const wy = centerY - p.imag * scale;
+        ctx.beginPath();
+        ctx.arc(wx, wy, radius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+
+    const item = document.createElement('div');
+    item.className = 'color-preview-item';
+    item.dataset.colorIndex = colorIdx;
+
+    previewCanvas.style.cursor = 'pointer';
+    previewCanvas.style.width = previewSize + 'px';
+    previewCanvas.style.height = previewSize + 'px';
+
+    const label = document.createElement('div');
+    label.className = 'color-preview-label';
+    label.textContent = `Color ${colorIdx}`;
+
+    item.appendChild(previewCanvas);
+    item.appendChild(label);
+
+    item.addEventListener('click', () => toggleColorGroup(colorIdx));
+    colorPreviewsWrapper.appendChild(item);
+
+    if (colorIdx < colorCount - 1) {
+      const divider = document.createElement('div');
+      divider.className = 'color-preview-divider';
+      colorPreviewsWrapper.appendChild(divider);
+    }
+  }
+}
+
+function toggleColorGroup(colorIdx) {
+  if (selectedColorGroups.has(colorIdx)) {
+    selectedColorGroups.delete(colorIdx);
+  } else {
+    selectedColorGroups.add(colorIdx);
+  }
+  updateColorPreviewUI();
+}
+
+function navigateColorGroups(direction) {
+  if (selectedColorGroups.size === 0) return;
+
+  const currentColor = Array.from(selectedColorGroups)[0];
+  const colorCount = state.colorCount;
+
+  let nextColor;
+  if (direction === 'left') {
+    nextColor = (currentColor - 1 + colorCount) % colorCount;
+  } else {
+    nextColor = (currentColor + 1) % colorCount;
+  }
+
+  selectedColorGroups.clear();
+  selectedColorGroups.add(nextColor);
+  updateColorPreviewUI();
+
+  const previewItem = colorPreviewsWrapper.querySelector(`[data-color-index="${nextColor}"]`);
+  if (previewItem) {
+    previewItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+}
+
+function updateColorPreviewUI() {
+  const items = colorPreviewsWrapper.querySelectorAll('.color-preview-item');
+  items.forEach((item, idx) => {
+    if (selectedColorGroups.has(idx)) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  const filteredSet = new Set(selectedColorGroups);
+  requestDraw(() => {
+    const filteredSelected = filteredSet.size === 0 ? new Set() : filteredSet;
+    draw(state, colorPalette, filteredSelected);
+  });
 }
 
 // Add computation to history and update URL
@@ -91,15 +210,13 @@ function loadState(index) {
   cInput.value = savedState.c;
   kInput.value = '';
 
-  updateColorFilterOptions(colorFilter, savedState.c, savedState.selectedColors);
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
   requestDraw(drawWrapped);
   updateHistoryButtonsUI();
 }
 
 function drawWrapped() {
-  const selectedSet = new Set(getSelectedColors(colorFilter));
-  draw(state, colorPalette, selectedSet);
+  draw(state, colorPalette, selectedColorGroups);
 }
 
 function downloadImage() {
@@ -184,7 +301,6 @@ function plot() {
     kInput.value = '';
     playButton.style.display = 'block';
     pauseButton.style.display = 'none';
-    updateColorFilterOptions(colorFilter, c);
 
     // Pack computation metadata alongside points for history
     const newState = {
@@ -199,12 +315,13 @@ function plot() {
       gcdColorsOrder: gcd(c, order),
       omegaInverse: modInverse(w, n),
       computeTime,
-      selectedColors: getSelectedColors(colorFilter)
+      selectedColors: Array.from(selectedColorGroups)
     };
 
     saveState(newState);
     updateUrl(n, w, c);
     statusText.textContent = buildStatusText(newState, state.currentHistoryIndex, state.history.length);
+    generateColorPreviews(c, pts, colorPalette);
     requestDraw(drawWrapped);
   });
 }
@@ -319,8 +436,8 @@ function recolorCurrentPlot() {
   savedState.gcdColorsN = gcd(newC, savedState.n);
   savedState.gcdColorsOrder = gcd(newC, savedState.order);
 
-  updateColorFilterOptions(colorFilter, newC);
-  savedState.selectedColors = getSelectedColors(colorFilter);
+  savedState.selectedColors = Array.from(selectedColorGroups);
+  generateColorPreviews(newC, state.points, colorPalette);
   updateUrl(savedState.n, savedState.w, newC, true);
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
   requestDraw(drawWrapped);
@@ -329,11 +446,26 @@ function recolorCurrentPlot() {
 function setupEventListeners() {
   plotButton.addEventListener('click', plot);
 
+  viewAllButton.addEventListener('click', () => {
+    selectedColorGroups.clear();
+    updateColorPreviewUI();
+  });
+
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    if (document.activeElement === colorFilter) return;
-    e.preventDefault();
-    plot();
+    if (e.key === 'ArrowLeft') {
+      if (selectedColorGroups.size > 0) {
+        e.preventDefault();
+        navigateColorGroups('left');
+      }
+    } else if (e.key === 'ArrowRight') {
+      if (selectedColorGroups.size > 0) {
+        e.preventDefault();
+        navigateColorGroups('right');
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      plot();
+    }
   });
 
   // Debounce color input to avoid recomputing on every keystroke
@@ -345,13 +477,6 @@ function setupEventListeners() {
 
   // prevButton.addEventListener('click', () => loadState(state.currentHistoryIndex - 1));
   // nextButton.addEventListener('click', () => loadState(state.currentHistoryIndex + 1));
-
-  colorFilter.addEventListener('change', () => {
-    if (state.currentHistoryIndex >= 0) {
-      state.history[state.currentHistoryIndex].selectedColors = getSelectedColors(colorFilter);
-    }
-    requestDraw(drawWrapped);
-  });
 
   pointSizeSlider.addEventListener('input', () => {
     const size = parseFloat(pointSizeSlider.value);
