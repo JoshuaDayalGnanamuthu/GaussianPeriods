@@ -52,6 +52,7 @@ const speedValue = document.getElementById('speedValue');
 const viewAllButton = document.getElementById('viewAllButton');
 const colorPreviewsWrapper = document.getElementById('colorPreviewsWrapper');
 const downloadPngBtn = document.getElementById('downloadPngBtn');
+const downloadCsvBtn = document.getElementById('downloadCsvBtn');
 const resetAxisBtn = document.getElementById('resetAxisBtn');
 const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
@@ -573,6 +574,7 @@ function setupEventListeners() {
   plotButton.addEventListener('click', plot);
 
   downloadPngBtn.addEventListener('click', downloadImage);
+  downloadCsvBtn.addEventListener('click', downloadCSV);
   resetAxisBtn.addEventListener('click', resetAxis);
   zoomInBtn.addEventListener('click', zoomIn);
   zoomOutBtn.addEventListener('click', zoomOut);
