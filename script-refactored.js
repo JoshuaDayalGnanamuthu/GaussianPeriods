@@ -69,6 +69,8 @@ function updateHistoryButtonsUI() {
   // updateHistoryButtons(prevButton, nextButton, state.currentHistoryIndex, state.history.length);
 }
 
+let urlSelectedColorsToApply = [];
+
 function generateColorPreviews(colorCount, points, colorPalette) {
   colorPreviewsWrapper.innerHTML = '';
   selectedColorGroups.clear();
@@ -145,6 +147,13 @@ function generateColorPreviews(colorCount, points, colorPalette) {
   const endDivider = document.createElement('div');
   endDivider.className = 'color-preview-divider';
   colorPreviewsWrapper.appendChild(endDivider);
+
+  // Apply selected colors from URL if available
+  if (urlSelectedColorsToApply.length > 0) {
+    selectedColorGroups = new Set(urlSelectedColorsToApply);
+    updateColorPreviewUI();
+    urlSelectedColorsToApply = [];
+  }
 }
 
 function toggleColorGroup(colorIdx) {
@@ -194,6 +203,12 @@ function updateColorPreviewUI() {
     const filteredSelected = filteredSet.size === 0 ? new Set() : filteredSet;
     draw(state, colorPalette, filteredSelected);
   });
+
+  // Update URL with selected colors
+  if (state.currentHistoryIndex >= 0) {
+    const savedState = state.history[state.currentHistoryIndex];
+    updateUrl(savedState.n, savedState.w, savedState.c, true, Array.from(selectedColorGroups));
+  }
 }
 
 // Add computation to history and update URL
@@ -329,7 +344,7 @@ function plot() {
     };
 
     saveState(newState);
-    updateUrl(n, w, c);
+    updateUrl(n, w, c, false, Array.from(selectedColorGroups));
     statusText.textContent = buildStatusText(newState, state.currentHistoryIndex, state.history.length);
     generateColorPreviews(c, pts, colorPalette);
     requestDraw(drawWrapped);
@@ -448,7 +463,7 @@ function recolorCurrentPlot() {
 
   savedState.selectedColors = Array.from(selectedColorGroups);
   generateColorPreviews(newC, state.points, colorPalette);
-  updateUrl(savedState.n, savedState.w, newC, true);
+  updateUrl(savedState.n, savedState.w, newC, true, Array.from(selectedColorGroups));
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
   requestDraw(drawWrapped);
 }
@@ -553,6 +568,7 @@ function setupEventListeners() {
 
 function initialize() {
   loadParamsFromUrl(nInput, wInput, cInput);
+  const { selectedColors: urlSelectedColors } = getParamsFromUrl();
   syncCanvasSize(state);
   setupEventListeners();
 
@@ -561,10 +577,13 @@ function initialize() {
   const initialC = safeEvaluate(cInput.value, 'colors');
 
   if (initialN !== null && initialW !== null && initialC !== null) {
-    updateUrl(initialN, initialW, initialC, true);
+    updateUrl(initialN, initialW, initialC, true, urlSelectedColors);
   }
   updateHistoryButtonsUI();
 
+  if (urlSelectedColors.length > 0) {
+    urlSelectedColorsToApply = urlSelectedColors;
+  }
   plot();
 }
 

@@ -1,18 +1,38 @@
 export function getParamsFromUrl() {
   const p = new URLSearchParams(window.location.search);
+  const selectedColorsStr = p.get('selected');
+  let selectedColors = [];
+
+  if (selectedColorsStr) {
+    if (selectedColorsStr === '-1') {
+      selectedColors = []; // Empty set means show all
+    } else {
+      selectedColors = selectedColorsStr.split(',').map(Number);
+    }
+  }
+
   return {
     n: p.get('n') ?? '12',
     w: p.get('w') ?? '7',
-    c: p.get('c') ?? '3'
+    c: p.get('c') ?? '3',
+    selectedColors
   };
 }
 
-export function updateUrl(n, w, c, replace = false) {
+export function updateUrl(n, w, c, replace = false, selectedColors = []) {
   const url = new URL(window.location.href);
   url.searchParams.set('n', n);
   url.searchParams.set('w', w);
   url.searchParams.set('c', c);
-  const state = { n, w, c };
+
+  // Encode selected colors: -1 for all, comma-separated numbers for specific colors
+  if (selectedColors.length === 0) {
+    url.searchParams.set('selected', '-1');
+  } else {
+    url.searchParams.set('selected', selectedColors.join(','));
+  }
+
+  const state = { n, w, c, selectedColors };
 
   if (replace) {
     window.history.replaceState(state, '', url);
