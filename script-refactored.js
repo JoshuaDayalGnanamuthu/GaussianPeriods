@@ -266,9 +266,14 @@ function downloadCSV() {
   }
 
   const rows = [['k', 'Real Part', 'Imaginary Part', 'Color']];
+  const showAll = selectedColorGroups.size === 0;
 
   for (const p of state.points) {
     const color = getColorClass(p, state.colorCount);
+
+    // Only include points if showing all colors or if this color is selected
+    if (!showAll && !selectedColorGroups.has(color)) continue;
+
     rows.push([
       p.k,
       p.real.toFixed(10),
