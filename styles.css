@@ -328,6 +328,10 @@ button:hover {
   border-color: #999;
 }
 
+#plotButton {
+  margin-top: 0.75rem;
+}
+
 #status {
   margin: 0;
   padding: 1rem;
