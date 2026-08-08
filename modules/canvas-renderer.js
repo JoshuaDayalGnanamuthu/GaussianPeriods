@@ -36,6 +36,41 @@ export function getCanvasContext() {
   return ctx;
 }
 
+// Draw faint grid lines at 1-unit intervals in complex plane
+function drawGrid(state, scale, width, height, centerX, centerY) {
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 1 / state.zoomFactor;
+
+  const gridSpacing = 1 * scale; // 1 unit in complex coords
+  if (gridSpacing < 2) return; // Don't draw grid if spacing too small
+
+  // Calculate visible range in complex coordinates
+  // A canvas point (cx, cy) corresponds to complex coordinate:
+  // real = (cx - centerX) / scale, imag = (centerY - cy) / scale
+  const minReal = Math.floor((0 - centerX) / scale);
+  const maxReal = Math.ceil((width - centerX) / scale);
+  const minImag = Math.floor((centerY - height) / scale);
+  const maxImag = Math.ceil(centerY / scale);
+
+  // Draw vertical grid lines (constant real part)
+  for (let re = minReal; re <= maxReal; re++) {
+    const wx = centerX + re * scale;
+    ctx.beginPath();
+    ctx.moveTo(wx, 0);
+    ctx.lineTo(wx, height);
+    ctx.stroke();
+  }
+
+  // Draw horizontal grid lines (constant imaginary part)
+  for (let im = minImag; im <= maxImag; im++) {
+    const wy = centerY - im * scale;
+    ctx.beginPath();
+    ctx.moveTo(0, wy);
+    ctx.lineTo(width, wy);
+    ctx.stroke();
+  }
+}
+
 // Render points on canvas with zoom/pan transforms and color filtering
 export function draw(state, colorPalette, selectedColors = new Set()) {
   syncCanvasSize(state);
@@ -91,6 +126,9 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
   const bigData = state.points.length > 8000;
 
   const showAll = selectedColors.size === 0;
+
+  // Draw grid before points
+  drawGrid(state, scale, width, height, centerX, centerY);
 
   // Render as circles for <8k points, pixels for larger sets (performance optimization)
   if (!bigData) {
