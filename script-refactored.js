@@ -129,6 +129,12 @@ function generateColorPreviews(colorCount, points, colorPalette) {
 
     item.addEventListener('click', () => toggleColorGroup(colorIdx));
     colorPreviewsWrapper.appendChild(item);
+
+    if (colorIdx < colorCount - 1) {
+      const divider = document.createElement('div');
+      divider.className = 'color-preview-divider';
+      colorPreviewsWrapper.appendChild(divider);
+    }
   }
 }
 
