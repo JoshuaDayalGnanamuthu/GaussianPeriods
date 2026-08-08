@@ -19,6 +19,7 @@ import {
   getSelectedColors,
   saveState as saveStateUrl
 } from './modules/url-state.js';
+import { drawBoxZoomRect } from './modules/canvas-renderer.js';
 import {
   attachMouseEvents,
   attachWheelEvent,
@@ -50,6 +51,15 @@ const speedSlider = document.getElementById('speedSlider');
 const speedValue = document.getElementById('speedValue');
 const viewAllButton = document.getElementById('viewAllButton');
 const colorPreviewsWrapper = document.getElementById('colorPreviewsWrapper');
+const downloadPngBtn = document.getElementById('downloadPngBtn');
+const resetAxisBtn = document.getElementById('resetAxisBtn');
+const zoomInBtn = document.getElementById('zoomInBtn');
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+const boxZoomBtn = document.getElementById('boxZoomBtn');
+
+let boxZoomMode = false;
+let boxZoomStart = null;
+let boxZoomRect = null;
 
 let colorPalette = [];
 let selectedColorGroups = new Set(); // Contains indices of selected color groups
@@ -242,6 +252,9 @@ function loadState(index) {
 
 function drawWrapped() {
   draw(state, colorPalette, selectedColorGroups);
+  if (boxZoomRect) {
+    drawBoxZoomRect(boxZoomRect);
+  }
 }
 
 function downloadImage() {
@@ -473,8 +486,160 @@ function recolorCurrentPlot() {
   requestDraw(drawWrapped);
 }
 
+function resetAxis() {
+  state.panX = 0;
+  state.panY = 0;
+  state.zoomFactor = 1;
+  requestDraw(drawWrapped);
+}
+
+function autoscale() {
+  if (state.points.length === 0) return;
+
+  let minReal = Infinity, maxReal = -Infinity;
+  let minImag = Infinity, maxImag = -Infinity;
+
+  for (const p of state.points) {
+    minReal = Math.min(minReal, p.real);
+    maxReal = Math.max(maxReal, p.real);
+    minImag = Math.min(minImag, p.imag);
+    maxImag = Math.max(maxImag, p.imag);
+  }
+
+  const rangeReal = maxReal - minReal || 1;
+  const rangeImag = maxImag - minImag || 1;
+  const maxRange = Math.max(rangeReal, rangeImag);
+
+  const canvasWidth = state.canvasW;
+  const canvasHeight = state.canvasH;
+  const zoomFactor = Math.min(canvasWidth, canvasHeight) / (maxRange * 2.5);
+
+  state.zoomFactor = Math.max(0.1, Math.min(10, zoomFactor));
+  state.panX = canvasWidth / 2 - ((minReal + maxReal) / 2) * state.zoomFactor;
+  state.panY = canvasHeight / 2 + ((minImag + maxImag) / 2) * state.zoomFactor;
+
+  requestDraw(drawWrapped);
+}
+
+function zoomIn() {
+  const centerScreenX = state.canvasW / 2;
+  const centerScreenY = state.canvasH / 2;
+
+  const oldZoom = state.zoomFactor;
+  const newZoom = Math.min(10, oldZoom * 1.5);
+
+  // Calculate world coordinates of center point before zoom
+  const centerWorldX = (centerScreenX - state.panX) / oldZoom;
+  const centerWorldY = (centerScreenY - state.panY) / oldZoom;
+
+  // Update zoom
+  state.zoomFactor = newZoom;
+
+  // Recalculate pan to keep the same world point at the center
+  state.panX = centerScreenX - centerWorldX * newZoom;
+  state.panY = centerScreenY - centerWorldY * newZoom;
+
+  requestDraw(drawWrapped);
+}
+
+function zoomOut() {
+  const centerScreenX = state.canvasW / 2;
+  const centerScreenY = state.canvasH / 2;
+
+  const oldZoom = state.zoomFactor;
+  const newZoom = Math.max(0.1, oldZoom / 1.5);
+
+  // Calculate world coordinates of center point before zoom
+  const centerWorldX = (centerScreenX - state.panX) / oldZoom;
+  const centerWorldY = (centerScreenY - state.panY) / oldZoom;
+
+  // Update zoom
+  state.zoomFactor = newZoom;
+
+  // Recalculate pan to keep the same world point at the center
+  state.panX = centerScreenX - centerWorldX * newZoom;
+  state.panY = centerScreenY - centerWorldY * newZoom;
+
+  requestDraw(drawWrapped);
+}
+
+function toggleBoxZoomMode() {
+  boxZoomMode = !boxZoomMode;
+  boxZoomBtn.classList.toggle('active', boxZoomMode);
+  canvas.style.cursor = boxZoomMode ? 'crosshair' : 'default';
+}
+
 function setupEventListeners() {
   plotButton.addEventListener('click', plot);
+
+  downloadPngBtn.addEventListener('click', downloadImage);
+  resetAxisBtn.addEventListener('click', resetAxis);
+  zoomInBtn.addEventListener('click', zoomIn);
+  zoomOutBtn.addEventListener('click', zoomOut);
+  boxZoomBtn.addEventListener('click', toggleBoxZoomMode);
+
+  // Box zoom event listeners
+  canvas.addEventListener('mousedown', (e) => {
+    if (!boxZoomMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = canvas.getBoundingClientRect();
+    boxZoomStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }, true);
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!boxZoomMode || !boxZoomStart) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = canvas.getBoundingClientRect();
+    const current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    boxZoomRect = {
+      x: Math.min(boxZoomStart.x, current.x),
+      y: Math.min(boxZoomStart.y, current.y),
+      width: Math.abs(current.x - boxZoomStart.x),
+      height: Math.abs(current.y - boxZoomStart.y)
+    };
+    requestDraw(drawWrapped);
+  }, true);
+
+  canvas.addEventListener('mouseup', (e) => {
+    if (!boxZoomMode || !boxZoomStart || !boxZoomRect) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (boxZoomRect.width > 5 && boxZoomRect.height > 5) {
+      const canvasWidth = state.canvasW;
+      const canvasHeight = state.canvasH;
+
+      const oldZoom = state.zoomFactor;
+
+      // Calculate zoom needed to fit the box on screen
+      const zoomX = canvasWidth / boxZoomRect.width;
+      const zoomY = canvasHeight / boxZoomRect.height;
+      const newZoom = Math.min(zoomX, zoomY) * 0.9;
+      state.zoomFactor = Math.max(0.1, Math.min(10, oldZoom * newZoom));
+
+      // Calculate world coordinates of box center in screen space
+      const boxCenterScreenX = boxZoomRect.x + boxZoomRect.width / 2;
+      const boxCenterScreenY = boxZoomRect.y + boxZoomRect.height / 2;
+
+      // Calculate world coordinates of box center
+      const boxCenterWorldX = (boxCenterScreenX - state.panX) / oldZoom;
+      const boxCenterWorldY = (boxCenterScreenY - state.panY) / oldZoom;
+
+      // Calculate canvas center
+      const canvasCenterX = canvasWidth / 2;
+      const canvasCenterY = canvasHeight / 2;
+
+      // Set pan so box center is at canvas center
+      state.panX = canvasCenterX - boxCenterWorldX * state.zoomFactor;
+      state.panY = canvasCenterY - boxCenterWorldY * state.zoomFactor;
+    }
+
+    boxZoomStart = null;
+    boxZoomRect = null;
+    requestDraw(drawWrapped);
+  }, true);
 
   viewAllButton.addEventListener('click', () => {
     selectedColorGroups.clear();

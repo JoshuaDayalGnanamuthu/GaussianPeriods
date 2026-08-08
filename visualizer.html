@@ -11,6 +11,33 @@
     <section class="canvas-wrap">
       <canvas id="canvas" width="1000" height="750"></canvas>
       <div id="tooltip"></div>
+      <div class="canvas-toolbar">
+        <button class="toolbar-btn" id="downloadPngBtn" title="Download plot as PNG">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+          </svg>
+        </button>
+        <button class="toolbar-btn" id="resetAxisBtn" title="Reset axes">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </button>
+        <button class="toolbar-btn" id="zoomInBtn" title="Zoom in">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+        </button>
+        <button class="toolbar-btn" id="zoomOutBtn" title="Zoom out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13H5v-2h14v2z"/>
+          </svg>
+        </button>
+        <button class="toolbar-btn" id="boxZoomBtn" title="Box zoom">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5 5h4V3H3v6h2V5zm10-2v2h4v4h2V3h-6zm-8 16h4v2H3v-6h2v4zm14 2v-2h2v-4h2v6h-6z"/>
+          </svg>
+        </button>
+      </div>
       <div class="color-previews-container">
         <div class="color-previews-scroll">
           <div id="colorPreviewsWrapper" class="color-previews-wrapper"></div>

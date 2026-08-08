@@ -157,3 +157,17 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
 export function getHoverPoint(mouseX, mouseY, state) {
   return findNearestHoverPoint(mouseX, mouseY, state.points.length);
 }
+
+export function drawBoxZoomRect(boxZoomRect) {
+  if (!boxZoomRect) return;
+
+  const canvas = document.getElementById('canvas');
+  const context = canvas.getContext('2d');
+
+  context.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  context.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  context.lineWidth = 2;
+
+  context.fillRect(boxZoomRect.x, boxZoomRect.y, boxZoomRect.width, boxZoomRect.height);
+  context.strokeRect(boxZoomRect.x, boxZoomRect.y, boxZoomRect.width, boxZoomRect.height);
+}

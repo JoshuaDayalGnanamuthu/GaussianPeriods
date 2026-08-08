@@ -36,6 +36,59 @@ body {
   border-color: #555;
 }
 
+.canvas-toolbar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.canvas-wrap:hover .canvas-toolbar {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.toolbar-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0.4rem;
+  border: 1px solid #666;
+  border-radius: 3px;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.toolbar-btn:hover {
+  background: #1a1a1a;
+  border-color: #999;
+}
+
+.toolbar-divider {
+  width: 1px;
+  background: #444;
+  margin: 0 0.25rem;
+}
+
+.toolbar-btn.active {
+  background: #1a1a1a;
+  border-color: #fff;
+}
+
 .color-previews-container {
   position: absolute;
   bottom: 0;
