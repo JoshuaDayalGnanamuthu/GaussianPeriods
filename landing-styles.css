@@ -423,17 +423,73 @@ body {
 }
 
 /* Examples Grid */
-.examples-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+.examples-carousel {
+  display: flex;
   margin-top: 2rem;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  cursor: grab;
 }
 
-.examples-grid > a {
+.examples-carousel:hover {
+  scrollbar-color: #888 #0a0a0a;
+}
+
+.examples-carousel:focus-within {
+  scrollbar-color: #888 #0a0a0a;
+}
+
+.examples-carousel:active {
+  cursor: grabbing;
+}
+
+.examples-page {
+  flex: 0 0 100%;
+  min-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.examples-page > a {
   text-decoration: none;
   display: block;
   height: 100%;
+}
+
+.examples-carousel::-webkit-scrollbar {
+  height: 10px;
+}
+
+.examples-carousel::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.examples-carousel::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.examples-carousel:hover::-webkit-scrollbar-track,
+.examples-carousel:focus-within::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.examples-carousel:hover::-webkit-scrollbar-thumb,
+.examples-carousel:focus-within::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+.examples-carousel:hover::-webkit-scrollbar-thumb:hover,
+.examples-carousel:focus-within::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }
 
 .example-card {
@@ -621,7 +677,7 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .examples-grid {
+  .examples-page {
     grid-template-columns: 1fr;
   }
 
