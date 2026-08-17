@@ -659,6 +659,77 @@ class ComputationVisualization {
   }
 }
 
+function initExamplesCarousel() {
+  const carousel = document.querySelector('.examples-carousel');
+  if (!carousel) return;
+
+  const pages = Array.from(carousel.querySelectorAll('.examples-page'));
+  if (pages.length <= 1) return;
+
+  const prevButton = document.querySelector('.examples-nav-prev');
+  const nextButton = document.querySelector('.examples-nav-next');
+  const pagination = document.querySelector('.examples-pagination');
+  const dots = [];
+  let activePage = 0;
+  let scrollFrame = null;
+
+  const getPageWidth = () => carousel.clientWidth || pages[0].clientWidth || 1;
+
+  const scrollToPage = (pageIndex) => {
+    const clampedIndex = Math.max(0, Math.min(pageIndex, pages.length - 1));
+    carousel.scrollTo({
+      left: clampedIndex * getPageWidth(),
+      behavior: 'smooth'
+    });
+  };
+
+  const syncControls = () => {
+    const pageWidth = getPageWidth();
+    const nextPage = Math.round(carousel.scrollLeft / pageWidth);
+    activePage = Math.max(0, Math.min(nextPage, pages.length - 1));
+
+    dots.forEach((dot, index) => {
+      const isActive = index === activePage;
+      dot.classList.toggle('is-active', isActive);
+      dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+    });
+
+    if (prevButton) prevButton.disabled = activePage === 0;
+    if (nextButton) nextButton.disabled = activePage === pages.length - 1;
+  };
+
+  const requestSync = () => {
+    if (scrollFrame !== null) return;
+    scrollFrame = requestAnimationFrame(() => {
+      scrollFrame = null;
+      syncControls();
+    });
+  };
+
+  pages.forEach((_, index) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'examples-pagination-dot';
+    dot.setAttribute('aria-label', `Go to gallery page ${index + 1}`);
+    dot.addEventListener('click', () => scrollToPage(index));
+    pagination?.appendChild(dot);
+    dots.push(dot);
+  });
+
+  prevButton?.addEventListener('click', () => scrollToPage(activePage - 1));
+  nextButton?.addEventListener('click', () => scrollToPage(activePage + 1));
+
+  carousel.addEventListener('scroll', requestSync, { passive: true });
+  carousel.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    scrollToPage(activePage + (event.key === 'ArrowRight' ? 1 : -1));
+  });
+
+  window.addEventListener('resize', syncControls);
+  syncControls();
+}
+
 // Initialize everything
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize equations
@@ -679,6 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (vizCanvas2) new GaussianPeriodsViz(vizCanvas2, 12, 2);
   if (coloringCanvas) new ColoringVisualization(coloringCanvas, 12, 7);
   if (computationCanvas && formulaElement) new ComputationVisualization(computationCanvas, formulaElement, 12, 7);
+  initExamplesCarousel();
 
   // Smooth scroll behavior for navigation
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
