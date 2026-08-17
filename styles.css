@@ -333,18 +333,30 @@ button:hover {
 }
 
 #status {
-  margin: 0;
-  padding: 1rem;
-  color: #aaa;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  margin-top: auto;
+  padding: 0.95rem 1rem 1rem;
+  color: #cfcfcf;
+  font-size: 0.8rem;
+  line-height: 1.75;
   white-space: pre-line;
   overflow-wrap: anywhere;
-  background: #050505;
-  border-top: 1px solid #333;
-  border-radius: 0;
-  margin: -2rem -2rem 0 -2rem;
-  margin-top: auto;
+  text-align: left;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(180deg, #070707, #030303);
+  border: 1px solid #262626;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+#status::before {
+  content: 'SUMMARY';
+  display: block;
+  margin-bottom: 0.55rem;
+  color: #6f6f6f;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   text-align: center;
 }
 
