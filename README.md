@@ -1,47 +1,99 @@
 # Gaussian Periods Visualizer
 
-Interactive visualization of Gaussian periods in the complex plane. Renders points based on parametric equations involving modular arithmetic, with zoom, pan, and color filtering capabilities.
+Gaussian Periods Visualizer is a small static web project for exploring Gaussian periods in the complex plane.
 
-## Features
+It includes:
 
-- **Computation**: Computes Gaussian period values using worker threads for non-blocking calculation
-- **Visualization**: Renders complex plane with points colored by residue class modulo a chosen color count
-- **Interaction**: 
-  - Drag to pan, scroll/pinch to zoom
-  - Double-click to reset, right-click to zoom out
-  - Hover to inspect individual points
-- **Export**: Download visualizations as PNG or computed data as CSV
-- **History**: Navigate between previous computations with undo/redo buttons
-- **URL State**: Shareable links with full application state encoded in URL parameters
+- a landing page that introduces the math in a more visual, approachable way
+- an interactive visualizer for plotting and inspecting points
+- a gallery of example parameter sets you can jump into directly
 
-## Project Structure
+The goal is simple: make a fairly abstract number-theory object feel concrete, explorable, and a little beautiful.
 
-The codebase is modularized into focused modules:
+## What You Can Do
 
-- **`script-refactored.js`** - Entry point; orchestrates modules and event flow
-- **`modules/math-utils.js`** - GCD, modular inverse, distinct point counting
-- **`modules/color-utils.js`** - HSV-RGB conversion, palette generation, color mapping
-- **`modules/canvas-renderer.js`** - Canvas rendering, point projection, hover grid queries
-- **`modules/viewport.js`** - Zoom/pan transformations, coordinate math
-- **`modules/event-handlers.js`** - Mouse, wheel, touch, resize event attachments
-- **`modules/computation.js`** - Input validation, computation orchestration
-- **`modules/worker-manager.js`** - Worker lifecycle management
-- **`modules/url-state.js`** - URL sync, history management, status generation
-- **`modules/state.js`** - Centralized mutable application state
-- **`modules/hover-system.js`** - Spatial hash grid for O(1) nearest-neighbor queries
+- Plot Gaussian periods from your own `n`, `omega`, and `colors` values
+- Pan, zoom, box-zoom, and reset the view
+- Hover over points to inspect coordinates
+- Track a specific `k` with both an input box and a slider
+- Animate the plot point-by-point with adjustable speed
+- Filter the view by color groups using the preview strip
+- Download the current plot as a PNG
+- Download the computed data as a CSV
+- Share a state through URL parameters
 
-## Usage
+For larger computations, the visualizer now shows a loading placeholder instead of leaving the canvas blank, so it feels clearer when work is in progress.
 
-Include in HTML:
-```html
-<script type="module" src="script-refactored.js"></script>
-```
+## Project Layout
 
-Parameters (in input fields or URL):
-- **n** - Size of the Gaussian period (≥ 2)
-- **w** - Primitive root modulo n (coprime with n)
-- **colors** - Number of color classes to visualize (divides n, < n)
+- `index.html`  
+  The landing page with the math overview, animated demos, and gallery.
 
-## Building
+- `visualizer.html`  
+  The main interactive plotting interface.
 
-No build step required—uses ES modules and `mathjs` from CDN. Worker computation runs in `worker.js`.
+- `landing.js` / `landing-styles.css`  
+  Logic and styling for the homepage experience.
+
+- `script-refactored.js` / `styles.css`  
+  Logic and styling for the visualizer.
+
+- `worker.js`  
+  Runs the Gaussian period computation off the main thread.
+
+- `modules/`  
+  Smaller focused modules for rendering, state, events, math helpers, viewport logic, and URL state.
+
+- `images/`  
+  Gallery images, favicon/title image, and UI assets.
+
+## Quick Start
+
+This project does not need a build step.
+
+1. Open `index.html` to browse the landing page, or open `visualizer.html` directly.
+2. Enter values for:
+   - `n`
+   - `omega`
+   - `colors`
+3. Click `Plot`.
+
+If you want the browser to behave more consistently with modules and local assets, it is still a good idea to serve the folder through a simple local server.
+
+## Input Notes
+
+- `n` should be an integer with `n >= 2`
+- `omega` should be an integer with `omega >= 1`
+- `omega` must be coprime to `n`
+- `colors` must be a positive proper divisor of `n`
+
+If an input is invalid, the visualizer explains the issue in the summary panel.
+
+## Interaction Cheatsheet
+
+- Drag: pan
+- Scroll or pinch: zoom
+- Double-click: reset view
+- Right-click: zoom out
+- Hover: inspect a nearby point
+- Enter: plot current values
+- Left/right arrows: move through selected color groups
+
+## A Few Nice Touches
+
+- The homepage gallery now has page dots and arrow controls for easier browsing
+- Gallery cards are square for a cleaner grid
+- The favicon/title image is now circular with real transparency
+- The status area in the visualizer has been restyled to fit the rest of the app better
+
+## Why It’s Organized This Way
+
+The visualizer started as a single script and has been split into smaller modules so the rendering logic, event handling, computation, and state management are easier to reason about independently.
+
+That makes it easier to keep experimenting with the interface without turning the math code into a mess.
+
+## Deployment
+
+The site is static and works well with GitHub Pages.
+
+If a Pages deployment fails even though the build succeeds, it may be a GitHub-side deployment issue rather than a problem in the site itself. In that case, re-running the deployment is often enough.
