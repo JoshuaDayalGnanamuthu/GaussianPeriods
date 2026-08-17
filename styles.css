@@ -38,6 +38,7 @@ body {
 }
 
 .canvas-wrap {
+  --canvas-footer-height: 180px;
   flex: 1;
   min-width: 0;
   border: 1px solid #333;
@@ -46,11 +47,153 @@ body {
   background: #000;
   position: relative;
   transition: border-color 0.2s ease;
-  padding-bottom: 180px;
+  padding-bottom: var(--canvas-footer-height);
 }
 
 .canvas-wrap:hover {
   border-color: #555;
+}
+
+.app.fullscreen .canvas-wrap {
+  --canvas-footer-height: 0px;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0 0 var(--canvas-footer-height) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(4, 4, 4, 0.94), rgba(0, 0, 0, 0.97));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 60;
+}
+
+.canvas-wrap.is-loading .loading-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.canvas-wrap.is-loading canvas {
+  opacity: 0.15;
+  transition: opacity 0.25s ease;
+}
+
+.loading-panel {
+  width: min(100%, 30rem);
+  padding: 1.7rem 1.5rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(17, 17, 17, 0.95), rgba(5, 5, 5, 0.95));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 30px 50px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.loading-orbit {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin: 0 auto 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.95rem rgba(255, 255, 255, 0.025);
+}
+
+.loading-orbit::before {
+  content: '';
+  position: absolute;
+  inset: 0.8rem;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  animation: loading-spin 12s linear infinite;
+}
+
+.loading-orbit::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #f3f3f3;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
+}
+
+.loading-orbit span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin: -0.21rem;
+  border-radius: 50%;
+  background: #d9d9d9;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+}
+
+.loading-orbit span:nth-child(1) {
+  animation: loading-orbit-a 2.2s linear infinite;
+}
+
+.loading-orbit span:nth-child(2) {
+  background: #a8a8a8;
+  animation: loading-orbit-b 2.8s linear infinite;
+}
+
+.loading-orbit span:nth-child(3) {
+  background: #ffffff;
+  animation: loading-orbit-c 3.4s linear infinite;
+}
+
+.loading-kicker {
+  margin: 0 0 0.35rem;
+  color: #929292;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.loading-title {
+  margin: 0;
+  color: #f7f7f7;
+  font-size: 1.45rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.loading-copy {
+  margin: 0.65rem auto 1rem;
+  max-width: 26rem;
+  color: #a9a9a9;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.loading-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.loading-meta span {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #d7d7d7;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
 }
 
 .canvas-toolbar {
@@ -72,6 +215,13 @@ body {
 .canvas-wrap:hover .canvas-toolbar {
   opacity: 1;
   pointer-events: all;
+}
+
+.canvas-wrap.is-loading .canvas-toolbar,
+.canvas-wrap.is-loading #tooltip,
+.canvas-wrap.is-loading #animationCounter {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .toolbar-btn {
@@ -352,12 +502,52 @@ button:hover {
   content: 'SUMMARY';
   display: block;
   margin-bottom: 0.55rem;
-  color: #6f6f6f;
+  color: #949494;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 0.64rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   text-align: center;
+}
+
+@keyframes loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-orbit-a {
+  from {
+    transform: rotate(0deg) translateX(2.75rem) rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(2.75rem) rotate(-360deg);
+  }
+}
+
+@keyframes loading-orbit-b {
+  from {
+    transform: rotate(120deg) translateX(1.95rem) rotate(-120deg);
+  }
+
+  to {
+    transform: rotate(480deg) translateX(1.95rem) rotate(-480deg);
+  }
+}
+
+@keyframes loading-orbit-c {
+  from {
+    transform: rotate(230deg) translateX(3.3rem) rotate(-230deg);
+  }
+
+  to {
+    transform: rotate(590deg) translateX(3.3rem) rotate(-590deg);
+  }
 }
 
 

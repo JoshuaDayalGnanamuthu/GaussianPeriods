@@ -11,6 +11,23 @@
   <main class="app">
     <section class="canvas-wrap">
       <canvas id="canvas" width="1000" height="750"></canvas>
+      <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+        <div class="loading-panel">
+          <div class="loading-orbit" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p class="loading-kicker">Computing</p>
+          <h2 class="loading-title">Building Gaussian periods</h2>
+          <p class="loading-copy">Computing the plot for the current values. Larger inputs can take a little longer.</p>
+          <div class="loading-meta">
+            <span data-loading-n>n = 12</span>
+            <span data-loading-w>omega = 7</span>
+            <span data-loading-c>colors = 3</span>
+          </div>
+        </div>
+      </div>
       <div id="animationCounter" style="position: absolute; top: 1rem; left: 1rem; font-size: 0.85rem; color: #fff; font-family: Georgia, 'Times New Roman', serif; display: none; background: rgba(0,0,0,0.6); padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid #444;"></div>
       <div id="tooltip"></div>
       <div class="canvas-toolbar">

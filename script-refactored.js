@@ -33,11 +33,16 @@ import { validateInput, validateRecolorInput } from './modules/computation.js';
 
 const canvas = getCanvasElement();
 const tooltip = document.getElementById('tooltip');
+const canvasWrap = document.querySelector('.canvas-wrap');
 const nInput = document.getElementById('nInput');
 const wInput = document.getElementById('wInput');
 const cInput = document.getElementById('cInput');
 const plotButton = document.getElementById('plotButton');
 const statusText = document.getElementById('status');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingN = document.querySelector('[data-loading-n]');
+const loadingW = document.querySelector('[data-loading-w]');
+const loadingC = document.querySelector('[data-loading-c]');
 // const prevButton = document.getElementById('prevButton');
 // const nextButton = document.getElementById('nextButton');
 const kSlider = document.getElementById('kSlider');
@@ -65,6 +70,17 @@ let boxZoomRect = null;
 
 let colorPalette = [];
 let selectedColorGroups = new Set(); // Contains indices of selected color groups
+
+function setLoadingState(isLoading, params = {}) {
+  canvasWrap.classList.toggle('is-loading', isLoading);
+  canvasWrap.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+  loadingOverlay.setAttribute('aria-hidden', isLoading ? 'false' : 'true');
+  plotButton.disabled = isLoading;
+
+  if (params.n !== undefined) loadingN.textContent = `n = ${params.n}`;
+  if (params.w !== undefined) loadingW.textContent = `omega = ${params.w}`;
+  if (params.c !== undefined) loadingC.textContent = `colors = ${params.c}`;
+}
 
 // Safely evaluate expression and catch parsing/evaluation errors
 function safeEvaluate(expr, displayName) {
@@ -320,8 +336,11 @@ function plot() {
 
   const t0 = performance.now();
   statusText.textContent = 'Computing...';
+  setLoadingState(true, { n, w, c });
 
   computeAsync(n, w, (result, error) => {
+    setLoadingState(false);
+
     if (error) {
       statusText.textContent = error.message;
       return;
