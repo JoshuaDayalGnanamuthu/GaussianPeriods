@@ -161,7 +161,7 @@ function generateColorPreviews(colorCount, points, colorPalette) {
     item.appendChild(previewCanvas);
     item.appendChild(label);
 
-    item.addEventListener('click', () => toggleColorGroup(colorIdx));
+    item.addEventListener('click', event => toggleColorGroup(colorIdx, event));
     colorPreviewsWrapper.appendChild(item);
 
     if (colorIdx < colorCount - 1) {
@@ -184,7 +184,18 @@ function generateColorPreviews(colorCount, points, colorPalette) {
   }
 }
 
-function toggleColorGroup(colorIdx) {
+function toggleColorGroup(colorIdx, event = null) {
+  const isMultiSelectIntent = Boolean(
+    event && (event.metaKey || event.ctrlKey || event.shiftKey)
+  );
+
+  if (!isMultiSelectIntent) {
+    selectedColorGroups.clear();
+    selectedColorGroups.add(colorIdx);
+    updateColorPreviewUI();
+    return;
+  }
+
   if (selectedColorGroups.has(colorIdx)) {
     selectedColorGroups.delete(colorIdx);
   } else {
@@ -730,6 +741,10 @@ function setupEventListeners() {
       if (appElement.classList.contains('fullscreen')) {
         e.preventDefault();
         toggleFullscreen();
+      } else if (selectedColorGroups.size > 0) {
+        e.preventDefault();
+        selectedColorGroups.clear();
+        updateColorPreviewUI();
       }
     } else if (e.key === 'ArrowLeft') {
       if (selectedColorGroups.size > 0) {
