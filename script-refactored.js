@@ -190,8 +190,13 @@ function toggleColorGroup(colorIdx, event = null) {
   );
 
   if (!isMultiSelectIntent) {
+    const isOnlySelectedColor =
+      selectedColorGroups.size === 1 && selectedColorGroups.has(colorIdx);
+
     selectedColorGroups.clear();
-    selectedColorGroups.add(colorIdx);
+    if (!isOnlySelectedColor) {
+      selectedColorGroups.add(colorIdx);
+    }
     updateColorPreviewUI();
     return;
   }
