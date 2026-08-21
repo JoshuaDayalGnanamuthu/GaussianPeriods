@@ -110,9 +110,11 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
     return;
   }
 
+  const pointsToDraw = state.orderedPoints.length ? state.orderedPoints : state.points;
+
   // Determine how many points to draw (all or up to animation index)
   // If animating or paused mid-animation, show up to animationK; otherwise show all
-  const maxK = state.animationK > 0 ? state.animationK : state.points.length;
+  const maxK = state.animationK > 0 ? state.animationK : pointsToDraw.length;
 
   // Autoscale complex plane to fit canvas
   let maxAbs = 0;
@@ -139,7 +141,7 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
     let lastCol = -1;
 
     for (let k = 0; k < maxK; k++) {
-      const p = state.points[k];
+      const p = pointsToDraw[k];
       const col = getColorClass(p, state.colorCount);
       if (!showAll && !selectedColors.has(col)) continue;
 
@@ -161,7 +163,7 @@ export function draw(state, colorPalette, selectedColors = new Set()) {
     let lastCol = -1;
 
     for (let k = 0; k < maxK; k++) {
-      const p = state.points[k];
+      const p = pointsToDraw[k];
       const col = getColorClass(p, state.colorCount);
       if (!showAll && !selectedColors.has(col)) continue;
 

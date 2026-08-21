@@ -38,6 +38,9 @@ const nInput = document.getElementById('nInput');
 const wInput = document.getElementById('wInput');
 const cInput = document.getElementById('cInput');
 const plotButton = document.getElementById('plotButton');
+const plotModeToggle = document.getElementById('plotModeToggle');
+const plotModeLabelNumber = document.getElementById('plotModeLabelNumber');
+const plotModeLabelColor = document.getElementById('plotModeLabelColor');
 const statusText = document.getElementById('status');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingN = document.querySelector('[data-loading-n]');
@@ -70,6 +73,51 @@ let boxZoomRect = null;
 
 let colorPalette = [];
 let selectedColorGroups = new Set(); // Contains indices of selected color groups
+
+function buildOrderedPoints(points, colorCount, plotMode) {
+  if (plotMode !== 'colorClass' || points.length === 0) {
+    return points;
+  }
+
+  const buckets = Array.from({ length: colorCount }, () => []);
+  for (const point of points) {
+    buckets[getColorClass(point, colorCount)].push(point);
+  }
+
+  const orderedPoints = new Array(points.length);
+  let orderedIndex = 0;
+
+  for (const bucket of buckets) {
+    for (const point of bucket) {
+      orderedPoints[orderedIndex++] = point;
+    }
+  }
+
+  return orderedPoints;
+}
+
+function syncPlotModeUI() {
+  const isColorClassMode = state.plotMode === 'colorClass';
+
+  plotModeToggle.dataset.mode = state.plotMode;
+  plotModeToggle.setAttribute('aria-checked', isColorClassMode ? 'true' : 'false');
+  plotModeLabelNumber.classList.toggle('active', !isColorClassMode);
+  plotModeLabelColor.classList.toggle('active', isColorClassMode);
+}
+
+function setPlotMode(plotMode, redraw = true) {
+  state.plotMode = plotMode;
+  state.orderedPoints = buildOrderedPoints(state.points, state.colorCount, plotMode);
+  syncPlotModeUI();
+
+  if (state.currentHistoryIndex >= 0) {
+    state.history[state.currentHistoryIndex].plotMode = plotMode;
+  }
+
+  if (redraw && state.points.length > 0) {
+    requestDraw(drawWrapped);
+  }
+}
 
 function setLoadingState(isLoading, params = {}) {
   canvasWrap.classList.toggle('is-loading', isLoading);
@@ -273,6 +321,7 @@ function loadState(index) {
   state.colorCount = savedState.c;
   state.trackedK = null;
   colorPalette = buildPalette(savedState.c);
+  setPlotMode(savedState.plotMode || state.plotMode, false);
 
   nInput.value = savedState.n;
   wInput.value = savedState.w;
@@ -314,8 +363,9 @@ function downloadCSV() {
 
   const rows = [['k', 'Real Part', 'Imaginary Part', 'Color']];
   const showAll = selectedColorGroups.size === 0;
+  const pointsToExport = state.orderedPoints.length ? state.orderedPoints : state.points;
 
-  for (const p of state.points) {
+  for (const p of pointsToExport) {
     const color = getColorClass(p, state.colorCount);
 
     // Only include points if showing all colors or if this color is selected
@@ -377,6 +427,7 @@ function plot() {
     state.animationK = 0;
     state.animationStartTime = null;
     colorPalette = buildPalette(c);
+    setPlotMode(state.plotMode, false);
 
     kInput.value = '';
     kSlider.max = n - 1;
@@ -400,7 +451,8 @@ function plot() {
       gcdColorsOrder: gcd(c, order),
       omegaInverse: modInverse(w, n),
       computeTime,
-      selectedColors: Array.from(selectedColorGroups)
+      selectedColors: Array.from(selectedColorGroups),
+      plotMode: state.plotMode
     };
 
     saveState(newState);
@@ -549,12 +601,14 @@ function recolorCurrentPlot() {
 
   state.colorCount = newC;
   colorPalette = buildPalette(newC);
+  setPlotMode(state.plotMode, false);
 
   savedState.c = newC;
   savedState.gcdColorsN = gcd(newC, savedState.n);
   savedState.gcdColorsOrder = gcd(newC, savedState.order);
 
   savedState.selectedColors = Array.from(selectedColorGroups);
+  savedState.plotMode = state.plotMode;
   generateColorPreviews(newC, state.points, colorPalette);
   updateUrl(savedState.n, savedState.w, newC, true, Array.from(selectedColorGroups));
   statusText.textContent = buildStatusText(savedState, state.currentHistoryIndex, state.history.length);
@@ -654,6 +708,12 @@ function toggleFullscreen() {
 
 function setupEventListeners() {
   plotButton.addEventListener('click', plot);
+  plotModeToggle.addEventListener('click', () => {
+    const nextMode = state.plotMode === 'number' ? 'colorClass' : 'number';
+    setPlotMode(nextMode);
+  });
+  plotModeLabelNumber.addEventListener('click', () => setPlotMode('number'));
+  plotModeLabelColor.addEventListener('click', () => setPlotMode('colorClass'));
 
   downloadPngBtn.addEventListener('click', downloadImage);
   downloadCsvBtn.addEventListener('click', downloadCSV);
@@ -865,6 +925,7 @@ function initialize() {
   loadParamsFromUrl(nInput, wInput, cInput);
   const { selectedColors: urlSelectedColors } = getParamsFromUrl();
   syncCanvasSize(state);
+  setPlotMode(state.plotMode, false);
   setupEventListeners();
 
   const initialN = safeEvaluate(nInput.value, 'n');

@@ -1,9 +1,11 @@
 // Centralized mutable state: computation results, viewport transforms, interaction state
 export const state = {
   points: [],
+  orderedPoints: [],
   history: [],
   currentHistoryIndex: -1,
   colorCount: 3,
+  plotMode: 'number',
   trackedK: null,
 
   // Viewport: complex plane to canvas transformation

@@ -98,6 +98,21 @@
         <label>colors<input id="cInput" type="text" min="1"/></label>
 
         <button id="plotButton">Plot</button>
+        <div class="plot-mode-control" aria-label="Plot mode">
+          <div class="plot-mode-row">
+            <span id="plotModeLabelNumber" class="plot-mode-label active">Plot by Number</span>
+            <button
+              id="plotModeToggle"
+              class="plot-mode-toggle"
+              type="button"
+              role="switch"
+              aria-checked="false"
+              aria-label="Toggle between plotting by number and plotting by color class">
+              <span class="plot-mode-thumb" aria-hidden="true"></span>
+            </button>
+            <span id="plotModeLabelColor" class="plot-mode-label">Plot by Color Class</span>
+          </div>
+        </div>
 
         <label>Track k<input id="kInput" type="text" placeholder="Enter k value" /></label>
 
