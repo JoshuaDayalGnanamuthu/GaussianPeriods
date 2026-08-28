@@ -1,7 +1,7 @@
 // Initialize KaTeX equations
 function initEquations() {
   // Definition equation
-  const eqDef = `\\eta_{a} = \\sum_{j \\in C_a} \\zeta^j`;
+  const eqDef = `\\eta_{aH} = \\sum_{x \\in aH} \\zeta_n^x`;
   katex.render(eqDef, document.getElementById('eq-definition'));
 
   // Roots of unity
@@ -9,11 +9,11 @@ function initEquations() {
   katex.render(eqRoots, document.getElementById('eq-roots'));
 
   // Character-based grouping
-  const eqChar = `\\eta_a = \\sum_{j=0}^{n-1} \\chi(j) = a \\cdot \\zeta_n^j`;
+  const eqChar = `\\eta_{aH}=\\sum_{x\\in G}\\mathbf{1}_{aH}(x)\\zeta_n^x`;
   katex.render(eqChar, document.getElementById('eq-character'));
 
   // Minimal polynomial
-  const eqMinimal = `\\text{min}_\\mathbb{Q}(\\eta_a) = \\prod_{\\sigma \\in G} (x - \\sigma(\\eta_a))`;
+  const eqMinimal = `m_{\\eta}(x)=\\prod_{\\sigma\\in G/H}\\left(x-\\sigma(\\eta)\\right)\\in\\mathbb{Z}[x]`;
   katex.render(eqMinimal, document.getElementById('eq-minimal'));
 
   // Coloring/Period equation
