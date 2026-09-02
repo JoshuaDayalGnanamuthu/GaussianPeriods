@@ -407,6 +407,7 @@ body {
 .section {
   padding: 5rem 0;
   position: relative;
+  scroll-margin-top: 5.5rem;
   border-top: 1px solid #1a1a1a;
 }
 
@@ -1613,6 +1614,31 @@ body {
 
   .topic-page-body .cta-footer {
     padding: 4.5rem 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    padding: 0.7rem 0;
+  }
+
+  .nav-container {
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-actions .nav-link,
+  .nav-actions .theme-toggle {
+    width: min(7rem, calc((100vw - 4rem) / 3));
+  }
+
+  .section {
+    scroll-margin-top: 7rem;
   }
 }
 

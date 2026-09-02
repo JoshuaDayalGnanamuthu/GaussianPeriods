@@ -12,9 +12,9 @@ export function getParamsFromUrl() {
   }
 
   return {
-    n: p.get('n') ?? '12',
-    w: p.get('w') ?? '7',
-    c: p.get('c') ?? '3',
+    n: p.get('n') ?? '91205',
+    w: p.get('w') ?? '39626',
+    c: p.get('c') ?? '5',
     selectedColors
   };
 }

@@ -4,7 +4,7 @@
 import { evaluate } from 'https://cdn.jsdelivr.net/npm/mathjs@13.2.0/+esm';
 import { state } from './modules/state.js';
 import { gcd, modInverse, countDistinctPoints } from './modules/math-utils.js';
-import { buildPalette, getColorClass } from './modules/color-utils.js';
+import { buildPalette, buildContrastingClassOrder, getColorClass } from './modules/color-utils.js';
 import { zoomAt, resetViewport } from './modules/viewport.js';
 import { draw, syncCanvasSize, getCanvasElement } from './modules/canvas-renderer.js';
 import { getHoverPoint } from './modules/canvas-renderer.js';
@@ -87,7 +87,8 @@ function buildOrderedPoints(points, colorCount, plotMode) {
   const orderedPoints = new Array(points.length);
   let orderedIndex = 0;
 
-  for (const bucket of buckets) {
+  for (const classIndex of buildContrastingClassOrder(colorCount)) {
+    const bucket = buckets[classIndex];
     for (const point of bucket) {
       orderedPoints[orderedIndex++] = point;
     }

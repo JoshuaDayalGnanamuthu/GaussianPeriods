@@ -31,6 +31,23 @@ export function buildPalette(colorCount) {
   return palette;
 }
 
+// Interleave opposite sides of the palette so consecutive classes contrast.
+export function buildContrastingClassOrder(colorCount) {
+  const order = [];
+  const splitIndex = Math.ceil(colorCount / 2);
+
+  for (let classIndex = 0; classIndex < splitIndex; classIndex++) {
+    order.push(classIndex);
+
+    const oppositeClass = classIndex + splitIndex;
+    if (oppositeClass < colorCount) {
+      order.push(oppositeClass);
+    }
+  }
+
+  return order;
+}
+
 // Map point index to color class via modular arithmetic
 export function getColorClass(point, colorModulus) {
   return ((point.k % colorModulus) + colorModulus) % colorModulus;
