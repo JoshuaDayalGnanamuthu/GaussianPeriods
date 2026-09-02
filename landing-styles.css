@@ -18,6 +18,14 @@ body {
   font-size: 16px;
 }
 
+body.landing-page {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.025), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.018), transparent 30%),
+    #000;
+}
+
 /* Navigation */
 .navbar {
   position: fixed;
@@ -70,10 +78,10 @@ body {
 .theme-toggle {
   width: auto;
   padding: 0.4rem 0.85rem;
-  border: 1px solid #444;
+  border: 1px solid #888;
   border-radius: 4px;
-  background: transparent;
-  color: #aaa;
+  background: #111;
+  color: #fff;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 0.82rem;
   line-height: 1.4;
@@ -83,10 +91,10 @@ body {
 }
 
 .theme-toggle:hover,
-.theme-toggle:focus-visible {
-  color: #fff;
-  border-color: #888;
-  background: #111;
+.theme-toggle:active {
+  color: #aaa;
+  border-color: #444;
+  background: transparent;
 }
 
 .theme-toggle:focus-visible {
@@ -115,6 +123,21 @@ body {
   height: 100%;
   z-index: -1;
   opacity: 0.15;
+}
+
+.landing-page #bgCanvas {
+  z-index: 0;
+  opacity: 0.92;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.landing-page > .hero,
+.landing-page > .section,
+.landing-page > .cta-footer,
+.landing-page > .footer {
+  position: relative;
+  z-index: 1;
 }
 
 /* Hero Section */
@@ -413,6 +436,16 @@ body {
 
 .section-alt {
   background: #050505;
+}
+
+.landing-page .section-alt {
+  background: rgba(5, 5, 5, 0.72);
+}
+
+.landing-page #math,
+.landing-page #coloring,
+.landing-page .cta-footer {
+  background: transparent;
 }
 
 .section h2 {
@@ -1718,6 +1751,13 @@ html[data-theme="light"] body {
   color: #1c1a17;
 }
 
+html[data-theme="light"] body.landing-page {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(70, 62, 49, 0.045), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgba(70, 62, 49, 0.035), transparent 30%),
+    #f4f1e8;
+}
+
 html[data-theme="light"] .hero {
   background:
     radial-gradient(circle at 50% 76%, rgba(72, 63, 48, 0.065), transparent 38%),
@@ -1731,6 +1771,12 @@ html[data-theme="light"] .hero-gallery::before {
 html[data-theme="light"] #bgCanvas {
   opacity: 0.08;
   filter: invert(1);
+}
+
+html[data-theme="light"] .landing-page #bgCanvas {
+  opacity: 0.48;
+  filter: none;
+  mix-blend-mode: multiply;
 }
 
 html[data-theme="light"] .navbar {
@@ -1823,15 +1869,16 @@ html[data-theme="light"] .nav-link:hover {
 }
 
 html[data-theme="light"] .theme-toggle {
-  color: #5d574e;
-  border-color: #bcb5a8;
-}
-
-html[data-theme="light"] .theme-toggle:hover,
-html[data-theme="light"] .theme-toggle:focus-visible {
   color: #161411;
   border-color: #777064;
   background: #e8e3d8;
+}
+
+html[data-theme="light"] .theme-toggle:hover,
+html[data-theme="light"] .theme-toggle:active {
+  color: #5d574e;
+  border-color: #bcb5a8;
+  background: transparent;
 }
 
 html[data-theme="light"] .section {
@@ -1841,6 +1888,16 @@ html[data-theme="light"] .section {
 html[data-theme="light"] .section-alt,
 html[data-theme="light"] .cta-footer {
   background: #ebe7dc;
+}
+
+html[data-theme="light"] .landing-page .section-alt {
+  background: rgba(235, 231, 220, 0.8);
+}
+
+html[data-theme="light"] .landing-page #math,
+html[data-theme="light"] .landing-page #coloring,
+html[data-theme="light"] .landing-page .cta-footer {
+  background: transparent;
 }
 
 html[data-theme="light"] .equation-block,

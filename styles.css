@@ -67,10 +67,10 @@ body {
 .theme-toggle {
   width: auto;
   padding: 0.4rem 0.85rem;
-  border: 1px solid #444;
+  border: 1px solid #888;
   border-radius: 4px;
-  background: transparent;
-  color: #aaa;
+  background: #111;
+  color: #fff;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 0.82rem;
   line-height: 1.4;
@@ -80,10 +80,10 @@ body {
 }
 
 .theme-toggle:hover,
-.theme-toggle:focus-visible {
-  color: #fff;
-  border-color: #888;
-  background: #111;
+.theme-toggle:active {
+  color: #aaa;
+  border-color: #444;
+  background: transparent;
 }
 
 .theme-toggle:focus-visible {
@@ -1217,15 +1217,16 @@ html[data-theme="light"] .nav-link:hover {
 }
 
 html[data-theme="light"] .theme-toggle {
-  color: #5d574e;
-  border-color: #bcb5a8;
-}
-
-html[data-theme="light"] .theme-toggle:hover,
-html[data-theme="light"] .theme-toggle:focus-visible {
   color: #161411;
   border-color: #777064;
   background: #e8e3d8;
+}
+
+html[data-theme="light"] .theme-toggle:hover,
+html[data-theme="light"] .theme-toggle:active {
+  color: #5d574e;
+  border-color: #bcb5a8;
+  background: transparent;
 }
 
 html[data-theme="light"] .canvas-wrap {

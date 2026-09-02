@@ -27,64 +27,324 @@ function initEquations() {
   if (colorModEq) katex.render(eqColorMod, colorModEq);
 }
 
-// Minimal animated background
+// Lightweight animated field behind the landing-page content.
 class CosmicBackground {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.particles = [];
+    this.webs = [];
+    this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    this.darkPalette = ['73, 219, 224', '246, 180, 70', '104, 157, 255'];
+    this.lightPalette = ['12, 105, 112', '158, 91, 24', '37, 82, 145'];
+    this.palette = document.documentElement.dataset.theme === 'light'
+      ? this.lightPalette
+      : this.darkPalette;
+    this.lastFrameTime = 0;
+    this.frameInterval = 1000 / 30;
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.resize();
-    this.initParticles();
-    this.animate();
+    this.initScene();
 
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener('resize', () => {
+      this.resize();
+      this.initScene();
+    });
+    window.addEventListener('pointermove', (event) => {
+      this.pointer.targetX = event.clientX / Math.max(this.width, 1) - 0.5;
+      this.pointer.targetY = event.clientY / Math.max(this.height, 1) - 0.5;
+    }, { passive: true });
+    document.documentElement.addEventListener('mouseleave', () => {
+      this.pointer.targetX = 0;
+      this.pointer.targetY = 0;
+    });
+
+    const syncPalette = () => {
+      this.palette = document.documentElement.dataset.theme === 'light'
+        ? this.lightPalette
+        : this.darkPalette;
+
+      if (this.reducedMotion.matches) {
+        this.drawScene(performance.now(), false);
+      }
+    };
+    syncPalette();
+    new MutationObserver(syncPalette).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    const handleMotionPreference = () => {
+      this.lastFrameTime = 0;
+      this.drawScene(performance.now(), false);
+    };
+
+    if (typeof this.reducedMotion.addEventListener === 'function') {
+      this.reducedMotion.addEventListener('change', handleMotionPreference);
+    } else {
+      this.reducedMotion.addListener(handleMotionPreference);
+    }
+
+    this.animate(0);
   }
 
   resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    this.canvas.width = Math.round(this.width * this.pixelRatio);
+    this.canvas.height = Math.round(this.height * this.pixelRatio);
+    this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
   }
 
-  initParticles() {
+  initScene() {
+    const areaBasedCount = Math.round((this.width * this.height) / 34000);
+    const particleCount = Math.max(24, Math.min(42, areaBasedCount));
+
     this.particles = [];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < particleCount; i++) {
       this.particles.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.2,
-        radius: Math.random() * 1 + 0.5,
-        opacity: Math.random() * 0.15 + 0.05,
-        pulseSpeed: Math.random() * 0.03 + 0.01
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        radius: Math.random() * 1.3 + 0.75,
+        opacity: Math.random() * 0.24 + 0.24,
+        phase: Math.random() * Math.PI * 2,
+        pulseSpeed: Math.random() * 0.0007 + 0.00035,
+        colorIndex: i % this.darkPalette.length
       });
+    }
+
+    const baseRadius = Math.max(68, Math.min(150, Math.min(this.width, this.height) * 0.18));
+    this.webs = [
+      { x: 0.08, y: 0.3, radius: baseRadius, sides: 8, rings: 4, squash: 0.82, rotation: -0.22, speed: 0.000055, phase: 0.3, color: 0 },
+      { x: 0.92, y: 0.7, radius: baseRadius * 1.2, sides: 10, rings: 5, squash: 0.74, rotation: 0.28, speed: -0.00004, phase: 2.2, color: 1 },
+      { x: 0.68, y: 0.12, radius: baseRadius * 0.72, sides: 7, rings: 3, squash: 0.86, rotation: -0.1, speed: 0.00007, phase: 4.1, color: 2 }
+    ];
+  }
+
+  updateParticles() {
+    this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.035;
+    this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.035;
+
+    this.particles.forEach((particle) => {
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+
+      if (particle.x < 0 || particle.x > this.width) particle.vx *= -1;
+      if (particle.y < 0 || particle.y > this.height) particle.vy *= -1;
+
+      particle.x = Math.max(0, Math.min(this.width, particle.x));
+      particle.y = Math.max(0, Math.min(this.height, particle.y));
+    });
+  }
+
+  drawConnections() {
+    const connectionDistance = Math.min(180, this.width * 0.22);
+
+    for (let i = 0; i < this.particles.length; i++) {
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const first = this.particles[i];
+        const second = this.particles[j];
+        const distance = Math.hypot(first.x - second.x, first.y - second.y);
+
+        if (distance >= connectionDistance) continue;
+
+        const opacity = (1 - distance / connectionDistance) * 0.18;
+        this.ctx.strokeStyle = `rgba(${this.palette[first.colorIndex]}, ${opacity})`;
+        this.ctx.lineWidth = 0.65;
+        this.ctx.beginPath();
+        this.ctx.moveTo(first.x, first.y);
+        this.ctx.lineTo(second.x, second.y);
+        this.ctx.stroke();
+      }
     }
   }
 
-  drawParticles() {
-    this.particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
+  drawParticles(time) {
+    this.particles.forEach((particle) => {
+      const pulse = Math.sin(time * particle.pulseSpeed + particle.phase) * 0.22 + 0.78;
 
-      if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
-      if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
-
-      p.x = Math.max(0, Math.min(this.canvas.width, p.x));
-      p.y = Math.max(0, Math.min(this.canvas.height, p.y));
-
-      const pulse = Math.sin(Date.now() * p.pulseSpeed * 0.001) * 0.3 + 0.7;
-      const radius = p.radius * pulse;
-
-      this.ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity * pulse})`;
+      this.ctx.fillStyle = `rgba(${this.palette[particle.colorIndex]}, ${particle.opacity * pulse})`;
       this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+      this.ctx.arc(particle.x, particle.y, particle.radius * pulse, 0, Math.PI * 2);
       this.ctx.fill();
     });
   }
 
-  animate() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.drawParticles();
-    requestAnimationFrame(() => this.animate());
+  drawAngularPaths(time) {
+    this.ctx.save();
+    const scrollRange = Math.max(document.documentElement.scrollHeight - this.height, 1);
+    const scrollPhase = (window.scrollY / scrollRange) * Math.PI * 2;
+
+    for (let index = 0; index < 4; index++) {
+      const phase = time * (0.00012 + index * 0.000018) + index * 1.65 + scrollPhase;
+      const baseY = this.height * (0.14 + index * 0.24);
+      const amplitude = 34 + index * 9;
+      const gradient = this.ctx.createLinearGradient(0, 0, this.width, 0);
+      const colorIndex = index % this.palette.length;
+      gradient.addColorStop(0, `rgba(${this.palette[colorIndex]}, 0)`);
+      gradient.addColorStop(0.2, `rgba(${this.palette[colorIndex]}, 0.2)`);
+      gradient.addColorStop(0.72, `rgba(${this.palette[(colorIndex + 1) % 3]}, 0.16)`);
+      gradient.addColorStop(1, `rgba(${this.palette[(colorIndex + 1) % 3]}, 0)`);
+
+      const pathPoints = Array.from({ length: 7 }, (_, pointIndex) => ({
+        x: -60 + pointIndex * ((this.width + 120) / 6),
+        y: baseY
+          + Math.sin(phase + pointIndex * 1.18) * amplitude
+          + this.pointer.y * (26 + index * 4)
+      }));
+
+      const drawPath = (lineWidth, alpha, dashed = false) => {
+        this.ctx.globalAlpha = alpha;
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.strokeStyle = gradient;
+        this.ctx.setLineDash(dashed ? [3, 13 + index * 2] : []);
+        this.ctx.lineDashOffset = (index % 2 === 0 ? -1 : 1) * time * 0.009;
+        this.ctx.beginPath();
+        pathPoints.forEach((point, pointIndex) => {
+          if (pointIndex === 0) this.ctx.moveTo(point.x, point.y);
+          else this.ctx.lineTo(point.x, point.y);
+        });
+        this.ctx.stroke();
+      };
+
+      drawPath(7 - index * 0.8, 0.08);
+      drawPath(0.9, 0.85);
+      drawPath(0.65, 0.55, true);
+
+      const travel = (time * (0.00016 + index * 0.00002) + index * 0.21) % 1;
+      const scaledTravel = travel * (pathPoints.length - 1);
+      const segmentIndex = Math.min(Math.floor(scaledTravel), pathPoints.length - 2);
+      const segmentProgress = scaledTravel - segmentIndex;
+      const start = pathPoints[segmentIndex];
+      const end = pathPoints[segmentIndex + 1];
+      const signalX = start.x + (end.x - start.x) * segmentProgress;
+      const signalY = start.y + (end.y - start.y) * segmentProgress;
+      this.ctx.globalAlpha = 0.9;
+      this.ctx.fillStyle = `rgba(${this.palette[colorIndex]}, 0.92)`;
+      this.ctx.fillRect(signalX - 2, signalY - 2, 4, 4);
+    }
+
+    this.ctx.setLineDash([]);
+    this.ctx.globalAlpha = 1;
+    this.ctx.restore();
+  }
+
+  drawLinearWebs(time) {
+    const scrollPhase = window.scrollY * 0.00022;
+
+    this.webs.forEach((web, webIndex) => {
+      const color = this.palette[web.color];
+      const secondaryColor = this.palette[(web.color + 1) % this.palette.length];
+      const centerX = web.x * this.width
+        + this.pointer.x * (30 + webIndex * 8)
+        + Math.sin(time * 0.00012 + web.phase) * 16;
+      const centerY = web.y * this.height
+        + this.pointer.y * (20 + webIndex * 6)
+        + Math.cos(time * 0.0001 + web.phase + scrollPhase) * 13;
+      const rotation = web.rotation + time * web.speed + scrollPhase * 0.3;
+      const rings = [];
+
+      this.ctx.save();
+      this.ctx.translate(centerX, centerY);
+      this.ctx.rotate(rotation);
+
+      for (let ringIndex = 1; ringIndex <= web.rings; ringIndex++) {
+        const ringScale = ringIndex / web.rings;
+        const vertices = [];
+
+        for (let sideIndex = 0; sideIndex < web.sides; sideIndex++) {
+          const angle = (sideIndex / web.sides) * Math.PI * 2;
+          const pulse = 1 + Math.sin(
+            time * 0.0002 + web.phase + sideIndex * 0.9 + ringIndex * 0.65
+          ) * 0.045;
+          const radius = web.radius * ringScale * pulse;
+          vertices.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius * web.squash
+          });
+        }
+
+        rings.push(vertices);
+        this.ctx.strokeStyle = `rgba(${ringIndex % 2 === 0 ? secondaryColor : color}, ${0.12 + ringIndex * 0.035})`;
+        this.ctx.lineWidth = ringIndex === web.rings ? 1 : 0.65;
+        this.ctx.beginPath();
+        vertices.forEach((vertex, vertexIndex) => {
+          if (vertexIndex === 0) this.ctx.moveTo(vertex.x, vertex.y);
+          else this.ctx.lineTo(vertex.x, vertex.y);
+        });
+        this.ctx.closePath();
+        this.ctx.stroke();
+      }
+
+      const outerRing = rings[rings.length - 1];
+      this.ctx.lineWidth = 0.65;
+      outerRing.forEach((outerVertex, sideIndex) => {
+        const innerVertex = rings[sideIndex % 2 === 0 ? 0 : Math.min(1, rings.length - 1)][sideIndex];
+        const nextOuterVertex = outerRing[(sideIndex + 1) % web.sides];
+        this.ctx.strokeStyle = `rgba(${sideIndex % 2 === 0 ? color : secondaryColor}, 0.2)`;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, 0);
+        this.ctx.lineTo(outerVertex.x, outerVertex.y);
+        this.ctx.stroke();
+
+        this.ctx.strokeStyle = `rgba(${secondaryColor}, 0.11)`;
+        this.ctx.beginPath();
+        this.ctx.moveTo(innerVertex.x, innerVertex.y);
+        this.ctx.lineTo(nextOuterVertex.x, nextOuterVertex.y);
+        this.ctx.stroke();
+      });
+
+      rings.forEach((vertices, ringIndex) => {
+        vertices.forEach((vertex, sideIndex) => {
+          if ((ringIndex + sideIndex) % 2 !== 0) return;
+          this.ctx.fillStyle = `rgba(${this.palette[(web.color + ringIndex + sideIndex) % 3]}, 0.62)`;
+          this.ctx.fillRect(vertex.x - 1.35, vertex.y - 1.35, 2.7, 2.7);
+        });
+      });
+
+      const travel = (time * 0.00016 + web.phase) % 1;
+      const scaledTravel = travel * web.sides;
+      const edgeIndex = Math.floor(scaledTravel) % web.sides;
+      const edgeProgress = scaledTravel - Math.floor(scaledTravel);
+      const edgeStart = outerRing[edgeIndex];
+      const edgeEnd = outerRing[(edgeIndex + 1) % web.sides];
+      const signalX = edgeStart.x + (edgeEnd.x - edgeStart.x) * edgeProgress;
+      const signalY = edgeStart.y + (edgeEnd.y - edgeStart.y) * edgeProgress;
+      this.ctx.fillStyle = `rgba(${secondaryColor}, 0.95)`;
+      this.ctx.fillRect(signalX - 2.5, signalY - 2.5, 5, 5);
+
+      this.ctx.restore();
+    });
+  }
+
+  drawScene(time, shouldUpdate = true) {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    if (shouldUpdate) this.updateParticles();
+    this.drawAngularPaths(time);
+    this.drawConnections();
+    this.drawParticles(time);
+    this.drawLinearWebs(time);
+  }
+
+  animate(time) {
+    if (this.reducedMotion.matches) {
+      if (this.lastFrameTime === 0) {
+        this.drawScene(time, false);
+        this.lastFrameTime = time || 1;
+      }
+      requestAnimationFrame((nextTime) => this.animate(nextTime));
+      return;
+    }
+
+    if (!document.hidden && time - this.lastFrameTime >= this.frameInterval) {
+      this.drawScene(time);
+      this.lastFrameTime = time;
+    }
+
+    requestAnimationFrame((nextTime) => this.animate(nextTime));
   }
 }
 
@@ -732,12 +992,12 @@ function initExamplesCarousel() {
 
 // Initialize everything
 document.addEventListener('DOMContentLoaded', () => {
+  // Keep the ambient field independent from third-party equation rendering.
+  const bgCanvas = document.getElementById('bgCanvas');
+  if (bgCanvas) new CosmicBackground(bgCanvas);
+
   // Initialize equations
   initEquations();
-
-  // Initialize background
-  const bgCanvas = document.getElementById('bgCanvas');
-  new CosmicBackground(bgCanvas);
 
   // Initialize visualizations
   const vizCanvas1 = document.getElementById('vizCanvas1');
