@@ -152,7 +152,7 @@ function createRelatedGrid(topicKey) {
       <a class="topic-link-card" href="visualizer.html">
         <span class="topic-card-kicker">Interactive</span>
         <h3>Open the Visualizer</h3>
-        <p>See how these ideas become actual plotted Gaussian-period sums in the complex plane.</p>
+        <p>Change the inputs and watch these same ideas build a Gaussian-period plot on the complex plane.</p>
         <span class="topic-card-action">Launch tool -&gt;</span>
       </a>
     </div>
@@ -199,7 +199,7 @@ function renderTopicPage(topicKey) {
         ${createSectionHeader(
           "At a glance",
           "Key Ideas",
-          "The three ideas to keep in view before moving into the formal details."
+          "Begin with these three ideas. Each one becomes a part of the fuller construction below."
         )}
         <div class="topic-summary-grid">
           ${createCardGrid(topic.summaryCards)}
@@ -212,7 +212,7 @@ function renderTopicPage(topicKey) {
         ${createSectionHeader(
           "Step by step",
           "Detailed Explanation",
-          "Each layer builds on the previous one, from the core definition to its role in Gaussian periods."
+          "Now we can follow the structure one step at a time, from the definition to its role in Gaussian periods."
         )}
         <div class="topic-detail-grid">
           ${createDetailGrid(topic.detailCards)}
@@ -237,7 +237,7 @@ function renderTopicPage(topicKey) {
         ${createSectionHeader(
           "Worked example",
           topic.example.title,
-          "A concrete case that connects the notation to an exact calculation."
+          "This concrete case brings the notation and the calculation together."
         )}
         <div class="topic-example-grid">
           <article class="topic-example-card">
@@ -261,7 +261,7 @@ function renderTopicPage(topicKey) {
         ${createSectionHeader(
           "Further reading",
           "References",
-          "Primary and university-level sources supporting the definitions and results on this page."
+          "These sources provide the formal definitions and results used throughout this explanation."
         )}
         <div class="reference-grid">
           ${createReferenceGrid(topic.references)}
@@ -274,7 +274,7 @@ function renderTopicPage(topicKey) {
         ${createSectionHeader(
           "Next steps",
           "Continue Exploring",
-          "Move between the foundation topics or put the mathematics into motion."
+          "Continue to another foundation topic, or watch the same ideas take shape in the visualizer."
         )}
         ${createRelatedGrid(topicKey)}
       </div>
