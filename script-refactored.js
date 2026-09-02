@@ -66,6 +66,26 @@ const zoomOutBtn = document.getElementById('zoomOutBtn');
 const boxZoomBtn = document.getElementById('boxZoomBtn');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const appElement = document.querySelector('.app');
+const presetGallery = document.getElementById('presetGallery');
+const presetGalleryToggle = document.getElementById('presetGalleryToggle');
+const presetGalleryPanel = document.getElementById('presetGalleryPanel');
+const presetGalleryClose = document.getElementById('presetGalleryClose');
+const presetGalleryGrid = document.getElementById('presetGalleryGrid');
+
+const galleryPresets = [
+  { n: 1481151, w: 54184, c: 21 },
+  { n: 455175, w: 3599, c: 289 },
+  { n: 357193, w: 8862, c: 113 },
+  { n: 185925, w: 766, c: 25 },
+  { n: 328549, w: 9247, c: 127 },
+  { n: 478125, w: 3124, c: 9 },
+  { n: 62160, w: 319, c: 3 },
+  { n: 82677, w: 8147, c: 21 },
+  { n: 91205, w: 39626, c: 5 },
+  { n: 1000000, w: 45807, c: 8 },
+  { n: 10000000, w: 45807, c: 32 },
+  { n: 100000, w: 45807, c: 8 }
+];
 
 let boxZoomMode = false;
 let boxZoomStart = null;
@@ -73,6 +93,77 @@ let boxZoomRect = null;
 
 let colorPalette = [];
 let selectedColorGroups = new Set(); // Contains indices of selected color groups
+let presetCards = [];
+
+function setPresetGalleryOpen(isOpen) {
+  presetGalleryPanel.hidden = !isOpen;
+  presetGalleryToggle.setAttribute('aria-expanded', String(isOpen));
+  canvasWrap.classList.toggle('is-preset-gallery-open', isOpen);
+
+  if (isOpen) {
+    presetGalleryClose.focus();
+  }
+}
+
+function syncPresetSelection(n, w, c) {
+  presetCards.forEach((card) => {
+    const isActive = Number(card.dataset.n) === n
+      && Number(card.dataset.w) === w
+      && Number(card.dataset.c) === c;
+    card.classList.toggle('is-active', isActive);
+    card.setAttribute('aria-pressed', String(isActive));
+  });
+}
+
+function initPresetGallery() {
+  const fragment = document.createDocumentFragment();
+
+  galleryPresets.forEach((preset) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'preset-card';
+    card.dataset.n = preset.n;
+    card.dataset.w = preset.w;
+    card.dataset.c = preset.c;
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', `Render n ${preset.n}, omega ${preset.w}, with ${preset.c} colors`);
+
+    const imageWrap = document.createElement('span');
+    imageWrap.className = 'preset-card-image';
+
+    const image = document.createElement('img');
+    image.src = `images/gaussian-period-n${preset.n}-w${preset.w}-c${preset.c}.png`;
+    image.alt = '';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    imageWrap.appendChild(image);
+
+    if (preset.n >= 1000000) {
+      const badge = document.createElement('span');
+      badge.className = 'preset-card-badge';
+      badge.textContent = 'Large';
+      imageWrap.appendChild(badge);
+    }
+
+    const copy = document.createElement('span');
+    copy.className = 'preset-card-copy';
+
+    const title = document.createElement('span');
+    title.className = 'preset-card-title';
+    title.textContent = `n=${preset.n}`;
+
+    const meta = document.createElement('span');
+    meta.className = 'preset-card-meta';
+    meta.textContent = `omega=${preset.w}  /  colors=${preset.c}`;
+
+    copy.append(title, meta);
+    card.append(imageWrap, copy);
+    fragment.appendChild(card);
+  });
+
+  presetGalleryGrid.appendChild(fragment);
+  presetCards = Array.from(presetGalleryGrid.querySelectorAll('.preset-card'));
+}
 
 function buildOrderedPoints(points, colorCount, plotMode) {
   if (plotMode !== 'colorClass' || points.length === 0) {
@@ -400,6 +491,7 @@ function plot() {
 
   if (n === null || w === null || c === null) return;
   if (!validateInput(n, w, c, statusText)) return;
+  syncPresetSelection(n, w, c);
 
   const t0 = performance.now();
   statusText.textContent = 'Computing...';
@@ -709,6 +801,31 @@ function toggleFullscreen() {
 
 function setupEventListeners() {
   plotButton.addEventListener('click', plot);
+  presetGalleryToggle.addEventListener('click', () => {
+    setPresetGalleryOpen(presetGalleryPanel.hidden);
+  });
+  presetGalleryClose.addEventListener('click', () => {
+    setPresetGalleryOpen(false);
+    presetGalleryToggle.focus();
+  });
+  presetGalleryGrid.addEventListener('click', (event) => {
+    const card = event.target.closest('.preset-card');
+    if (!card) return;
+
+    nInput.value = card.dataset.n;
+    wInput.value = card.dataset.w;
+    cInput.value = card.dataset.c;
+    selectedColorGroups.clear();
+    resetViewport(state);
+    setPresetGalleryOpen(false);
+    presetGalleryToggle.focus();
+    plot();
+  });
+  document.addEventListener('pointerdown', (event) => {
+    if (!presetGalleryPanel.hidden && !presetGallery.contains(event.target)) {
+      setPresetGalleryOpen(false);
+    }
+  });
   plotModeToggle.addEventListener('click', () => {
     const nextMode = state.plotMode === 'number' ? 'colorClass' : 'number';
     setPlotMode(nextMode);
@@ -804,7 +921,11 @@ function setupEventListeners() {
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (appElement.classList.contains('fullscreen')) {
+      if (!presetGalleryPanel.hidden) {
+        e.preventDefault();
+        setPresetGalleryOpen(false);
+        presetGalleryToggle.focus();
+      } else if (appElement.classList.contains('fullscreen')) {
         e.preventDefault();
         toggleFullscreen();
       } else if (selectedColorGroups.size > 0) {
@@ -927,6 +1048,7 @@ function initialize() {
   const { selectedColors: urlSelectedColors } = getParamsFromUrl();
   syncCanvasSize(state);
   setPlotMode(state.plotMode, false);
+  initPresetGallery();
   setupEventListeners();
 
   const initialN = safeEvaluate(nInput.value, 'n');
