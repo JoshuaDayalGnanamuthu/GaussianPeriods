@@ -10,6 +10,17 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="logo">Gaussian Periods</a>
+      <div class="nav-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle>Light mode</button>
+        <a href="index.html#examples" class="nav-link">Gallery</a>
+        <a href="visualizer.html" class="nav-link" aria-current="page">Visualizer</a>
+      </div>
+    </div>
+  </nav>
+
   <main class="app">
     <section class="canvas-wrap">
       <canvas id="canvas" width="1000" height="750"></canvas>
@@ -74,17 +85,12 @@
             <line x1="3" y1="15" x2="21" y2="15"></line>
           </svg>
         </button>
-        <button class="toolbar-btn" id="fullscreenBtn" title="Toggle fullscreen">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-          </svg>
-        </button>
-      </div>
-      <div class="preset-gallery" id="presetGallery">
         <button
-          class="preset-gallery-toggle"
+          class="toolbar-btn preset-gallery-toggle"
           id="presetGalleryToggle"
           type="button"
+          title="Gallery examples"
+          aria-label="Open gallery examples"
           aria-expanded="false"
           aria-haspopup="dialog"
           aria-controls="presetGalleryPanel">
@@ -94,8 +100,14 @@
             <rect x="3" y="14" width="7" height="7"></rect>
             <rect x="14" y="14" width="7" height="7"></rect>
           </svg>
-          <span>Examples</span>
         </button>
+        <button class="toolbar-btn" id="fullscreenBtn" title="Toggle fullscreen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="preset-gallery" id="presetGallery">
         <section class="preset-gallery-panel" id="presetGalleryPanel" role="dialog" aria-modal="false" aria-labelledby="presetGalleryTitle" hidden>
           <div class="preset-gallery-header">
             <div>
@@ -121,7 +133,6 @@
 
     <section class="controls">
       <a href="index.html" id="logo" class="home-link">Gaussian Periods Visualizer</a>
-      <button class="theme-toggle visualizer-theme-toggle" type="button" data-theme-toggle>Light mode</button>
 
       <div class="grid">
         <label>N<input id="nInput" type="text" min="2"/></label>

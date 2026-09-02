@@ -792,8 +792,9 @@ function toggleBoxZoomMode() {
 }
 
 function toggleFullscreen() {
-  appElement.classList.toggle('fullscreen');
-  fullscreenBtn.classList.toggle('active');
+  const isFullscreen = appElement.classList.toggle('fullscreen');
+  document.body.classList.toggle('visualizer-fullscreen', isFullscreen);
+  fullscreenBtn.classList.toggle('active', isFullscreen);
 
   // Trigger resize event to update canvas
   window.dispatchEvent(new Event('resize'));
@@ -822,7 +823,9 @@ function setupEventListeners() {
     plot();
   });
   document.addEventListener('pointerdown', (event) => {
-    if (!presetGalleryPanel.hidden && !presetGallery.contains(event.target)) {
+    if (!presetGalleryPanel.hidden
+      && !presetGallery.contains(event.target)
+      && !presetGalleryToggle.contains(event.target)) {
       setPresetGalleryOpen(false);
     }
   });
